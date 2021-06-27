@@ -215,9 +215,9 @@ def data_histograms(data):
 # write_data_as_csv((train, dev, test), data_dir + '\\AMNLPFinal\\wiki_gt_3_sentences')
 
 # make a dataset of texts that are missing some random sentence. the target is the position of the missing sentence
-np.random.seed(42)
-train, dev, test = read_data_from_csv(data_dir + '\\AMNLPFinal\\wiki_gt_3_sentences')
-make_dataset((train, dev, test), miss_random_sentence, data_dir + '\\AMNLPFinal\\missing_sentence')
+# np.random.seed(42)
+# train, dev, test = read_data_from_csv(data_dir + '\\AMNLPFinal\\wiki_gt_3_sentences')
+# make_dataset((train, dev, test), miss_random_sentence, data_dir + '\\AMNLPFinal\\missing_sentence')
 
 # make a dataset of texts that are missing the sentence before last (or not missing). the target is 1 if the sentence is missing, 0 if not
 np.random.seed(42)
