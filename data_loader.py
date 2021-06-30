@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 from datasets import load_dataset
 import re
 
-data_dir = "C:\\Users\\aavia\\OneDrive\\Documents\\datasets"
+data_dir = "C:\\my_documents\\datasets"
 
 
 def clip_to_10k(dataset):
@@ -101,7 +101,7 @@ def miss_last_paragraph(series):
             deleted_paragraph_index = -1
 
     if series['should_manipulate']:
-        new_paragraphs = paragraphs[:deleted_paragraph_index] + paragraphs[deleted_paragraph_index + 1]
+        new_paragraphs = paragraphs[:deleted_paragraph_index] + [paragraphs[deleted_paragraph_index + 1]]
         series['text'] = '\n'.join(new_paragraphs)
         series['target'] = 1
     else:
@@ -141,11 +141,11 @@ def miss_last_sentence(series):
             deleted_sentence_index = -1
 
     if series['should_manipulate']:
-        new_lines = lines[:deleted_sentence_index] + lines[deleted_sentence_index + 1]
+        new_lines = lines[:deleted_sentence_index] + [lines[deleted_sentence_index + 1], '']
         series['text'] = '.'.join(new_lines)
         series['target'] = 1
     else:
-        series['text'] = '.'.join(lines[:deleted_sentence_index + 2])
+        series['text'] = '.'.join(lines[:deleted_sentence_index + 2] + [''])
         series['target'] = 0
 
     return series
@@ -183,6 +183,14 @@ def make_dataset(data, manipulation_func, dataset_dir):
         split['should_manipulate'] = texts_to_manipulate_bools
 
         split = split.apply(manipulation_func, axis=1)
+        # for i in [1 ,4, 78, 106, 3457, 6778, 8955, 9998]:
+        #     print(i)
+        #     print("target")
+        #     print(split['target'][i])
+        #     print("text")
+        #     print(split['text'][i])
+        #     print("original_text")
+        #     print(split['original_text'][i])
         splits.append(split)
 
     write_data_as_csv(splits, dataset_dir)
@@ -220,16 +228,16 @@ def data_histograms(data):
 # make_dataset((train, dev, test), miss_random_sentence, data_dir + '\\AMNLPFinal\\missing_sentence')
 
 # make a dataset of texts that are missing the sentence before last (or not missing). the target is 1 if the sentence is missing, 0 if not
-np.random.seed(42)
-train, dev, test = read_data_from_csv(data_dir + '\\AMNLPFinal\\wiki_gt_3_sentences')
-make_dataset((train, dev, test), miss_last_sentence, data_dir + '\\AMNLPFinal\\missing_last_sentence')
+# np.random.seed(42)
+# train, dev, test = read_data_from_csv(data_dir + '\\AMNLPFinal\\wiki_gt_3_sentences')
+# make_dataset((train, dev, test), miss_last_sentence, data_dir + '\\AMNLPFinal\\missing_last_sentence')
 
 # make a dataset of texts that are missing some random paragraph. the target is the position of the missing paragraph
-np.random.seed(42)
-train, dev, test = read_data_from_csv(data_dir + '\\AMNLPFinal\\wiki_gt_4_paragraphs')
-make_dataset((train, dev, test), miss_random_paragraph, data_dir + '\\AMNLPFinal\\missing_paragraph')
+# np.random.seed(42)
+# train, dev, test = read_data_from_csv(data_dir + '\\AMNLPFinal\\wiki_gt_4_paragraphs')
+# make_dataset((train, dev, test), miss_random_paragraph, data_dir + '\\AMNLPFinal\\missing_paragraph')
 
 # make a dataset of texts that are missing the paragraph before last (or not missing). the target is 1 if the paragraph is missing, 0 if not
-np.random.seed(42)
-train, dev, test = read_data_from_csv(data_dir + '\\AMNLPFinal\\wiki_gt_4_paragraphs')
-make_dataset((train, dev, test), miss_last_paragraph, data_dir + '\\AMNLPFinal\\missing_last_paragraph')
+# np.random.seed(42)
+# train, dev, test = read_data_from_csv(data_dir + '\\AMNLPFinal\\wiki_gt_4_paragraphs')
+# make_dataset((train, dev, test), miss_last_paragraph, data_dir + '\\AMNLPFinal\\missing_last_paragraph')
