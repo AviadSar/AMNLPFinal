@@ -136,7 +136,7 @@ def set_trainer(args):
 
     data = data_loader.read_data_from_csv(args.data_dir)
     # the ratio of train/dev/test sets where 1 is the full size of each the set
-    splits_ratio = [1, 1, 1]
+    splits_ratio = [0.01, 0.01, 0.01]
 
     tokenized_data = []
     for split, ratio in zip(data, splits_ratio):

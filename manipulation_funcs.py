@@ -10,11 +10,11 @@ class remove_second_last_paragraph_out_of_n(object):
         text = series['original_text']
         paragraphs = text.split('\n')
 
-        sequence_start_pos = np.random.randint(0, len(paragraphs) - num_paragraphs, 1)[0]
+        sequence_start_pos = np.random.randint(0, len(paragraphs) - (num_paragraphs - 1), 1)[0]
         if series['should_manipulate']:
-            paragraphs = paragraphs[sequence_start_pos: sequence_start_pos + num_paragraphs + 1]
-        else:
             paragraphs = paragraphs[sequence_start_pos: sequence_start_pos + num_paragraphs]
+        else:
+            paragraphs = paragraphs[sequence_start_pos: sequence_start_pos + num_paragraphs - 1]
 
         if series['should_manipulate']:
             new_paragraphs = paragraphs[:-2] + [paragraphs[-1]]
@@ -36,11 +36,11 @@ class remove_second_last_paragraph_out_of_n_text_target(object):
         text = series['original_text']
         paragraphs = text.split('\n')
 
-        sequence_start_pos = np.random.randint(0, len(paragraphs) - num_paragraphs, 1)[0]
+        sequence_start_pos = np.random.randint(0, len(paragraphs) - (num_paragraphs - 1), 1)[0]
         if series['should_manipulate']:
-            paragraphs = paragraphs[sequence_start_pos: sequence_start_pos + num_paragraphs + 1]
-        else:
             paragraphs = paragraphs[sequence_start_pos: sequence_start_pos + num_paragraphs]
+        else:
+            paragraphs = paragraphs[sequence_start_pos: sequence_start_pos + num_paragraphs - 1]
 
         if series['should_manipulate']:
             series['text'] = '\n'.join(paragraphs[:-2] + [' <mask>' + paragraphs[-1]])
