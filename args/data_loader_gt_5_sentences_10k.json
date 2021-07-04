@@ -1,0 +1,11 @@
+{
+  "n_data_samples": 30000,
+  "wiki_dir": "C:\\\\my_documents\\\\datasets\\\\AMNLPFinal",
+  "filtered_data_dir": "C:\\my_documents\\datasets\\AMNLPFinal\\wiki_gt_5_sentences_10k",
+  "final_data_dir": null,
+  "manipulation_func": null,
+  "clean_and_filter_funcs":
+     ["longest_sequence",
+      "longer_then_n_sentences_5",
+      "clip_to_100000"]
+}

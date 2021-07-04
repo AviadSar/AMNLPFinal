@@ -1,11 +1,15 @@
 import re
 
 
-def clip_to_10k(dataset):
-    if dataset.shape[0] < 10000:
-        raise Exception('not enough samples')
-    cleaned_dataset = dataset[:][:10000]
-    return cleaned_dataset
+class clip_to(object):
+    def __init__(self, clip_size):
+        self.clip_size = clip_size
+
+    def __call__(self, dataset, *args, **kwargs):
+        if dataset.shape[0] < self.clip_size:
+            raise Exception('not enough samples')
+        cleaned_dataset = dataset[:][:self.clip_size]
+        return cleaned_dataset
 
 
 def num_lines(text):
@@ -16,19 +20,22 @@ def num_paragraphs(text):
     return len(text.split('\n'))
 
 
-def longer_then_3_sentences(dataset):
-    cleaned_dataset = dataset[dataset['text'].map(num_lines) > 3]
-    return cleaned_dataset
+class longer_then_n_sentences(object):
+    def __init__(self, sentences_limit):
+        self.sentences_limit = sentences_limit
+
+    def __call__(self, dataset, *args, **kwargs):
+        cleaned_dataset = dataset[dataset['text'].map(num_lines) > self.sentences_limit]
+        return cleaned_dataset
 
 
-def longer_then_10_sentences(dataset):
-    cleaned_dataset = dataset[dataset['text'].map(num_lines) > 10]
-    return cleaned_dataset
+class longer_then_n_paragraphs(object):
+    def __init__(self, paragraph_limit):
+        self.paragraph_limit = paragraph_limit
 
-
-def longer_then_4_paragraphs(dataset):
-    cleaned_dataset = dataset[dataset['text'].map(num_paragraphs) > 4]
-    return cleaned_dataset
+    def __call__(self, dataset, *args, **kwargs):
+        cleaned_dataset = dataset[dataset['text'].map(num_paragraphs) > self.paragraph_limit]
+        return cleaned_dataset
 
 
 def longest_sequence_single_row(row):
@@ -55,18 +62,15 @@ def omit_references(dataset):
 
 
 def get_data_cleaning_func_from_string(string):
-    if string == 'clip_to_10k':
-        return clip_to_10k
-    elif string == 'num_lines':
-        return num_lines
-    elif string == 'num_paragraphs':
-        return num_paragraphs
-    elif string == 'longer_then_3_sentences':
-        return longer_then_3_sentences
-    elif string == 'longer_then_10_sentences':
-        return longer_then_10_sentences
-    elif string == 'longer_then_4_paragraphs':
-        return longer_then_4_paragraphs
+    if "clip_to" in string:
+        clip_size = int(string[8:])
+        return clip_to(clip_size)
+    elif "longer_then" in string and "sentences" in string:
+        sentences_limit = int(string[24:])
+        return longer_then_n_sentences(sentences_limit)
+    elif "longer_then" in string and "paragraphs" in string:
+        paragraphs_limit = int(string[25:])
+        return longer_then_n_paragraphs(paragraphs_limit)
     elif string == 'longest_sequence':
         return longest_sequence
     elif string == 'omit_references':
@@ -81,5 +85,5 @@ def get_data_cleaning_funcs_from_string_list(string_list):
         if data_cleaning_func is None:
             return None
         else:
-            data_cleaning_funcs.append(get_data_cleaning_func_from_string(data_cleaning_funcs_string))
+            data_cleaning_funcs.append(data_cleaning_func)
     return data_cleaning_funcs

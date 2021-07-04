@@ -2,6 +2,7 @@ import torch
 import numpy as np
 import pandas as pd
 import argparse
+from args_classes import TrainerArgs
 from transformers import RobertaTokenizerFast, RobertaForSequenceClassification, DataCollatorWithPadding, Trainer, TrainingArguments, TrainerCallback
 import data_loader
 import dataset_classes
@@ -9,6 +10,13 @@ import dataset_classes
 
 def parse_args():
     parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "--json_file",
+        help="path to a json file to load arguments from",
+        type=str,
+        default=None
+    )
 
     parser.add_argument(
         "--data_dir",
@@ -42,10 +50,13 @@ def parse_args():
         '--end_epoch',
         help='end training on this epoch',
         type=int,
-        default=25,
+        default=50,
     )
 
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.json_file:
+        args = TrainerArgs(args.json_file)
+    return args
 
 
 def set_trainer(args):

@@ -1,9 +1,11 @@
 import torch
 import pandas as pd
 import numpy as np
+import os
 from matplotlib import pyplot as plt
 from datasets import load_dataset
 import argparse
+from args_classes import DataLoaderArgs
 
 from data_manipulation_funcs import get_manipulation_func_from_string
 from data_cleaning_funcs import get_data_cleaning_funcs_from_string_list
@@ -13,6 +15,13 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
+        "--json_file",
+        help="path to a json file to load arguments from",
+        type=str,
+        default=None
+    )
+
+    parser.add_argument(
         "--wiki_dir",
         help="path to original wikipedia dataset directory",
         type=str,
@@ -20,10 +29,17 @@ def parse_args():
     )
 
     parser.add_argument(
-        "--data_dir",
+        "--filtered_data_dir",
         help="path to the newly created dataset directory",
         type=str,
-        default="C:\\my_documents\\datasets\\AMNLPFinal\\miss_last_paragraph_3_paragraphs"
+        default="C:\\my_documents\\datasets\\AMNLPFinal\\wiki_gt_6_sentences_100k"
+    )
+
+    parser.add_argument(
+        "--final_data_dir",
+        help="path to the newly created dataset directory",
+        type=str,
+        default="C:\\my_documents\\datasets\\AMNLPFinal\\miss_last_sentence_5_sentences_"
     )
 
     parser.add_argument(
@@ -48,10 +64,17 @@ def parse_args():
         help='the functions used to clean and filter the original wikipedia dataset'
     )
 
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.json_file:
+        args = DataLoaderArgs(args.json_file)
+    return args
 
 
 def write_data_as_csv(data, data_dir):
+    if not os.path.isdir(data_dir):
+        os.makedirs(data_dir)
+        print("creating dataset directory " + data_dir)
+
     train, dev, test = data
     train.to_csv(data_dir + '\\train.tsv', sep='\t')
     dev.to_csv(data_dir + '\\dev.tsv', sep='\t')
@@ -88,7 +111,7 @@ def data_histograms(data):
 
 
 def load_data(args):
-    wiki = load_dataset('wikipedia', "20200501.en", cache_dir=args.data_dir)
+    wiki = load_dataset('wikipedia', "20200501.en", cache_dir=args.wiki_dir)
     n_data_samples = args.n_data_samples
 
     selected_data_indices = np.random.choice(range(len(wiki['train'])), n_data_samples, replace=False)
@@ -130,7 +153,7 @@ def make_dataset(data, args):
         #     print(split['original_text'][i])
         splits.append(split)
 
-    write_data_as_csv(splits, args.dataset_dir)
+    write_data_as_csv(splits, args.final_data_dir)
 
 
 if __name__ == '__main__':
@@ -138,32 +161,12 @@ if __name__ == '__main__':
     args.manipulation_func = get_manipulation_func_from_string(args.manipulation_func)
     args.clean_and_filter_funcs = get_data_cleaning_funcs_from_string_list(args.clean_and_filter_funcs)
 
-    # first time loading base data
-    # np.random.seed(42)
-    # train, dev, test = load_data(args)
-    # write_data_as_csv((train, dev, test), data_dir + '\\AMNLPFinal\\wiki_gt_10_sentences')
-    #
-    # make a dataset of texts that are missing some random sentence. the target is the position of the missing sentence
-    # np.random.seed(42)
-    # train, dev, test = read_data_from_csv(data_dir + '\\AMNLPFinal\\wiki_gt_3_sentences')
-    # make_dataset((train, dev, test), miss_random_sentence, data_dir + '\\AMNLPFinal\\missing_sentence')
-    #
-    # make a dataset of texts that are missing the sentence before last (or not missing), and are all 5 sentences long. the target is 1 if the sentence is missing, 0 if not
-    # np.random.seed(42)
-    # train, dev, test = read_data_from_csv(data_dir + '\\AMNLPFinal\\wiki_gt_10_sentences')
-    # make_dataset((train, dev, test), miss_last_sentence_5_sentences, data_dir + '\\AMNLPFinal\\miss_last_sentence_5_sentences')
-    #
-    # make a dataset of texts that are missing some random paragraph. the target is the position of the missing paragraph
-    # np.random.seed(42)
-    # train, dev, test = read_data_from_csv(data_dir + '\\AMNLPFinal\\wiki_gt_4_paragraphs')
-    # make_dataset((train, dev, test), miss_random_paragraph, data_dir + '\\AMNLPFinal\\missing_paragraph')
-    #
-    # make a dataset of texts that are missing the paragraph before last (or not missing). the target is 1 if the paragraph is missing, 0 if not
-    # np.random.seed(42)
-    # train, dev, test = read_data_from_csv(data_dir + '\\AMNLPFinal\\wiki_gt_4_paragraphs')
-    # make_dataset((train, dev, test), miss_last_paragraph, data_dir + '\\AMNLPFinal\\missing_last_paragraph')
-    #
-    # make a dataset of texts that are missing the paragraph before last (or not missing). the target is 1 if the paragraph is missing, 0 if not
-    # np.random.seed(42)
-    # train, dev, test = read_data_from_csv(data_dir + '\\AMNLPFinal\\wiki_gt_4_paragraphs')
-    # make_dataset((train, dev, test), miss_last_paragraph_3_paragraphs, data_dir + '\\AMNLPFinal\\miss_last_paragraph_3_paragraphs')
+    if args.clean_and_filter_funcs:
+        np.random.seed(42)
+        train, dev, test = load_data(args)
+        write_data_as_csv((train, dev, test), args.filtered_data_dir)
+
+    if args.manipulation_func:
+        np.random.seed(42)
+        train, dev, test = read_data_from_csv(args.filtered_data_dir)
+        make_dataset((train, dev, test), args)
