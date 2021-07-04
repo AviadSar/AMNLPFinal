@@ -1,7 +1,9 @@
 {
-  "data_dir": "C:\\\\my_documents\\\\datasets\\\\AMNLPFinal\\\\C:\\my_documents\\datasets\\AMNLPFinal\\missing_second_last_sentence_out_of_5_10k",
+  "data_dir": "C:\\my_documents\\datasets\\AMNLPFinal\\missing_second_last_sentence_out_of_5_10k",
   "model_dir": "C:\\\\my_documents\\\\models\\\\roberta_missing_second_last_sentence_out_of_5_10k",
   "model_name":"roberta-base",
+  "model_type":"sequence_classification",
   "start_epoch": 0,
-  "end_epoch": 50
+  "end_epoch": 50,
+  "batch_size": 4
 }

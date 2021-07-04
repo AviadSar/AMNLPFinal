@@ -1,11 +1,17 @@
 import torch
 import numpy as np
+import sklearn
 import pandas as pd
 import argparse
 from args_classes import TrainerArgs
-from transformers import RobertaTokenizerFast, RobertaForSequenceClassification, DataCollatorWithPadding, Trainer, TrainingArguments, TrainerCallback
+from transformers import RobertaTokenizerFast, RobertaForSequenceClassification, RobertaForTokenClassification,\
+    Trainer, TrainingArguments, TrainerCallback
+from tokenizers import AddedToken
 import data_loader
 import dataset_classes
+from datasets import load_metric
+
+accuracy_metric = load_metric("accuracy")
 
 
 def parse_args():
@@ -40,6 +46,13 @@ def parse_args():
     )
 
     parser.add_argument(
+        '--model_type',
+        help='the type of model (head), e.g., sequence classification, token classification, etc.',
+        type=str,
+        default="classification",
+    )
+
+    parser.add_argument(
         '--start_epoch',
         help='continue or start training from this epoch',
         type=int,
@@ -53,36 +66,90 @@ def parse_args():
         default=50,
     )
 
+    parser.add_argument(
+        '--batch_size',
+        help='number of samples in each batch of training/evaluating',
+        type=int,
+        default=4,
+    )
+
     args = parser.parse_args()
     if args.json_file:
         args = TrainerArgs(args.json_file)
     return args
 
 
-def set_trainer(args):
+def get_model_from_string(args):
+    if 'roberta' in args.model_name:
+        if args.model_type == 'sequence_classification':
+            return RobertaForSequenceClassification.from_pretrained(args.model_name)
+        elif args.model_type == 'token_classification':
+            return RobertaForTokenClassification.from_pretrained(args.model_name)
+    raise Exception('no such model: name "{}", type "{}"'.format(args.model_name, args.model_type))
 
-    tokenizer = RobertaTokenizerFast.from_pretrained('roberta-base')
-    model = RobertaForSequenceClassification.from_pretrained('roberta-base')
+
+def encode_targets_for_token_classification(split, ratio, tokenizer):
+    encoded_targets = tokenizer(split['target'].tolist()[:int(len(split) * ratio)], truncation=True, padding=True)['input_ids']
+    for target in encoded_targets:
+        for index, val in enumerate(target):
+            # if the token is not one of the two special tokens <skip>, <no_skip>
+            if val not in [len(tokenizer) - 2, len(tokenizer) - 1]:
+                # huggingface's way of telling the trainer to ignore this token for loss calculations
+                target[index] = -100
+            elif val == len(tokenizer) - 2:
+                target[index] = 0
+            elif val == len(tokenizer) - 1:
+                target[index] = 1
+    return encoded_targets
+
+def encode_targets(split, ratio, tokenizer, args):
+    if args.model_type == 'sequence_classification':
+        return split['target'].tolist()[:int(len(split) * ratio)]
+    elif args.model_type == 'token_classification':
+        return encode_targets_for_token_classification(split, ratio, tokenizer)
+
+
+def compute_token_accuracy(eval_pred):
+    logits, labels = eval_pred
+    predictions = np.argmax(logits, axis=-1)
+    return accuracy_metric.compute(predictions=predictions[labels != -100], references=labels[labels != -100])
+
+
+def compute_sequence_accuracy(eval_pred):
+    logits, labels = eval_pred
+    predictions = np.argmax(logits, axis=-1)
+    return accuracy_metric.compute(predictions=predictions, references=labels)
+
+
+def compute_metrics(args):
+    if args.model_type == 'token_classification':
+        return compute_token_accuracy
+    elif args.model_type == 'sequence_classification':
+        return compute_sequence_accuracy
+
+
+def set_trainer(args):
+    tokenizer = RobertaTokenizerFast.from_pretrained(args.model_name)
+    tokenizer.add_special_tokens({"additional_special_tokens": [AddedToken('<skip>', lstrip=True), AddedToken('<no_skip>', lstrip=True)]})
+    model = get_model_from_string(args)
+    model.resize_token_embeddings(len(tokenizer))
 
     data = data_loader.read_data_from_csv(args.data_dir)
-    # dev set is 1/10 the size of train set and test set
-    splits_ratio = [1, 0.1, 1]
+    # the ratio of train/dev/test sets where 1 is the full size of each the set
+    splits_ratio = [1, 1, 1]
 
     tokenized_data = []
     for split, ratio in zip(data, splits_ratio):
         tokenized_data.append(
             {
                 'encoded_text': tokenizer(split['text'].tolist()[:int(len(split) * ratio)], truncation=True, padding=True),
-                'targets': split['target'].tolist()[:int(len(split) * ratio)]
+                'encoded_target': encode_targets(split, ratio, tokenizer, args)
             }
         )
 
     dataset = []
     for split in tokenized_data:
-        dataset.append(dataset_classes.TextDataset(split['encoded_text'], split['targets']))
-
-    # data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
-
+        dataset.append(dataset_classes.TextDataset(split['encoded_text'], split['encoded_target']))
 
     class StopEachEpochCallback(TrainerCallback):
         def on_epoch_end(self, args, state, control, logs=None, **kwargs):
@@ -92,23 +159,24 @@ def set_trainer(args):
     training_args = TrainingArguments(
         output_dir=args.model_dir,          # output directory
         num_train_epochs=50,              # total number of training epochs
-        per_device_train_batch_size=4,  # batch size per device during training
-        per_device_eval_batch_size=4,   # batch size for evaluation
-        gradient_accumulation_steps=32,
+        per_device_train_batch_size=args.batch_size,  # batch size per device during training
+        per_device_eval_batch_size=args.batch_size,   # batch size for evaluation
+        gradient_accumulation_steps=128 // args.batch_size,
         warmup_steps=500,                # number of warmup steps for learning rate scheduler
         weight_decay=0.01,               # strength of weight decay
-        logging_steps=6,
+        logging_steps=10,
         save_strategy="no",
         seed=42,
     )
 
+
     trainer = Trainer(
         model=model,                         # the instantiated 🤗 Transformers model to be trained
         args=training_args,                  # training arguments, defined above
-        # data_collator=data_collator,
         train_dataset=dataset[0],         # training dataset
         eval_dataset=dataset[1],           # evaluation dataset
-        callbacks=[StopEachEpochCallback()]
+        callbacks=[StopEachEpochCallback()],
+        compute_metrics=compute_metrics(args)
     )
 
     return trainer
@@ -116,27 +184,28 @@ def set_trainer(args):
 
 def train_and_eval(trainer, args):
     start_epoch, end_epoch, model_dir = args.start_epoch, args.end_epoch, args.model_dir
-    eval_loss = None
+    eval_accuracy = None
     for epoch in range(start_epoch, end_epoch):
         if epoch == 0:
             trainer.train()
         else:
             trainer.train(model_dir)
 
-        new_eval_loss = trainer.evaluate()['eval_loss']
-        if eval_loss is None or new_eval_loss < eval_loss:
-            eval_loss = new_eval_loss
+        eval = trainer.evaluate()
+        new_eval_accuracy = eval['eval_accuracy']
+        if eval_accuracy is None or new_eval_accuracy > eval_accuracy:
+            eval_accuracy = new_eval_accuracy
             trainer.save_model(model_dir + '\\best_model')
             trainer.save_state()
             print("saved epoch: " + str(epoch + 1))
         trainer.save_model(model_dir)
         trainer.save_state()
         print("epoch: " + str(epoch + 1))
-        print("eval loss: " + str(new_eval_loss))
+        print("eval loss: " + str(eval['eval_loss']))
+        print("eval accuracy: " + str(new_eval_accuracy))
 
 
 if __name__ == "__main__":
     args = parse_args()
     trainer = set_trainer(args)
     train_and_eval(trainer, args)
-    # trainer.train()

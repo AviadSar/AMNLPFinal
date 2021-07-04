@@ -7,7 +7,7 @@ from datasets import load_dataset
 import argparse
 from args_classes import DataLoaderArgs
 
-from data_manipulation_funcs import get_manipulation_func_from_string
+from manipulation_funcs import get_manipulation_func_from_string
 from data_cleaning_funcs import get_data_cleaning_funcs_from_string_list
 
 
@@ -50,18 +50,18 @@ def parse_args():
     )
 
     parser.add_argument(
-        '--manipulation_func',
+        '--manipulation_func', \
+        help='the function used to adjust the newly created dataset',
         type=str,
-        default=None,
-        help='the function used to adjust the newly created dataset'
+        default=None
     )
 
     parser.add_argument(
         '--clean_and_filter_funcs',
+        help='the functions used to clean and filter the original wikipedia dataset',
         type=str,
         nargs='+',
-        default=None,
-        help='the functions used to clean and filter the original wikipedia dataset'
+        default=None
     )
 
     args = parser.parse_args()
