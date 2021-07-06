@@ -4,6 +4,6 @@
   "model_name":"roberta-base",
   "model_type":"token_classification",
   "start_epoch": 0,
-  "end_epoch": 50,
+  "end_epoch": 25,
   "batch_size": 2
 }

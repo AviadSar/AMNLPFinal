@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+import os
 import sklearn
 import pandas as pd
 import argparse
@@ -10,6 +11,7 @@ from tokenizers import AddedToken
 import data_loader
 import dataset_classes
 from datasets import load_metric
+from logger import Logger
 
 accuracy_metric = load_metric("accuracy")
 
@@ -136,7 +138,7 @@ def set_trainer(args):
 
     data = data_loader.read_data_from_csv(args.data_dir)
     # the ratio of train/dev/test sets where 1 is the full size of each the set
-    splits_ratio = [0.01, 0.01, 0.01]
+    splits_ratio = [0.01, 0.01, 1]
 
     tokenized_data = []
     for split, ratio in zip(data, splits_ratio):
@@ -155,10 +157,9 @@ def set_trainer(args):
         def on_epoch_end(self, args, state, control, logs=None, **kwargs):
             control.should_training_stop = True
 
-
     training_args = TrainingArguments(
         output_dir=args.model_dir,          # output directory
-        num_train_epochs=50,              # total number of training epochs
+        num_train_epochs=args.end_epoch,              # total number of training epochs
         per_device_train_batch_size=args.batch_size,  # batch size per device during training
         per_device_eval_batch_size=args.batch_size,   # batch size for evaluation
         gradient_accumulation_steps=128 // args.batch_size,
@@ -184,7 +185,8 @@ def set_trainer(args):
 
 def train_and_eval(trainer, args):
     start_epoch, end_epoch, model_dir = args.start_epoch, args.end_epoch, args.model_dir
-    eval_accuracy = None
+    logger = Logger(args, start_epoch)
+    best_eval_accuracy = logger.best_eval_accuracy
     for epoch in range(start_epoch, end_epoch):
         if epoch == 0:
             trainer.train()
@@ -192,17 +194,18 @@ def train_and_eval(trainer, args):
             trainer.train(model_dir)
 
         eval = trainer.evaluate()
-        new_eval_accuracy = eval['eval_accuracy']
-        if eval_accuracy is None or new_eval_accuracy > eval_accuracy:
-            eval_accuracy = new_eval_accuracy
-            trainer.save_model(model_dir + '\\best_model')
+        eval_accuracy = eval['eval_accuracy']
+        if eval_accuracy > best_eval_accuracy:
+            best_eval_accuracy = eval_accuracy
+            trainer.save_model(model_dir + os.path.sep + 'best_model')
             trainer.save_state()
             print("saved epoch: " + str(epoch + 1))
         trainer.save_model(model_dir)
         trainer.save_state()
+        logger.update(trainer.state.log_history[-2]['train_loss'], eval['eval_loss'], eval_accuracy)
         print("epoch: " + str(epoch + 1))
         print("eval loss: " + str(eval['eval_loss']))
-        print("eval accuracy: " + str(new_eval_accuracy))
+        print("eval accuracy: " + str(eval_accuracy))
 
 
 if __name__ == "__main__":

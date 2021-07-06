@@ -103,11 +103,11 @@ class remove_second_last_sentence_out_of_n(object):
         if lines[-1]:
             lines.append('')
 
-        sequence_start_pos = np.random.randint(0, len(lines) - num_sentences - 1, 1)[0]
+        sequence_start_pos = np.random.randint(0, len(lines) - num_sentences, 1)[0]
         if series['should_manipulate']:
-            lines = lines[sequence_start_pos: sequence_start_pos + num_sentences + 1]
-        else:
             lines = lines[sequence_start_pos: sequence_start_pos + num_sentences]
+        else:
+            lines = lines[sequence_start_pos: sequence_start_pos + num_sentences - 1]
 
         if series['should_manipulate']:
             new_lines = lines[:-2] + [lines[-1], '']
@@ -131,11 +131,11 @@ class remove_second_last_sentence_out_of_n_text_target(object):
         if lines[-1]:
             lines.append('')
 
-        sequence_start_pos = np.random.randint(0, len(lines) - num_sentences - 1, 1)[0]
+        sequence_start_pos = np.random.randint(0, len(lines) - num_sentences, 1)[0]
         if series['should_manipulate']:
-            lines = lines[sequence_start_pos: sequence_start_pos + num_sentences + 1]
-        else:
             lines = lines[sequence_start_pos: sequence_start_pos + num_sentences]
+        else:
+            lines = lines[sequence_start_pos: sequence_start_pos + num_sentences - 1]
 
         if series['should_manipulate']:
             series['text'] = '.'.join(lines[:-2] + [' <mask>' + lines[-1], ''])
