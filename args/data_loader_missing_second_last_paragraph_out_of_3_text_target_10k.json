@@ -6,7 +6,8 @@
   "manipulation_func": "remove_second_last_paragraph_out_of_n_text_target",
   "manipulation_func_args": [3],
   "clean_and_filter_funcs":
-     ["longest_sequence",
+     ["omit_references",
+      "longest_sequence",
       "longer_then_n_paragraphs_2",
       "clip_to_10000"]
 }

@@ -6,7 +6,8 @@
   "manipulation_func": "remove_second_last_sentence_out_of_n",
   "manipulation_func_args": [5],
   "clean_and_filter_funcs":
-     ["longest_sequence",
+     ["omit_references",
+      "longest_sequence",
       "longer_then_n_sentences_5",
       "clip_to_10000"]
 }
