@@ -50,7 +50,7 @@ def parse_args():
     )
 
     parser.add_argument(
-        '--manipulation_func', \
+        '--manipulation_func',
         help='the function used to adjust the newly created dataset',
         type=str,
         default=None
@@ -76,15 +76,15 @@ def write_data_as_csv(data, data_dir):
         print("creating dataset directory " + data_dir)
 
     train, dev, test = data
-    train.to_csv(data_dir + '\\train.tsv', sep='\t')
-    dev.to_csv(data_dir + '\\dev.tsv', sep='\t')
-    test.to_csv(data_dir + '\\test.tsv', sep='\t')
+    train.to_csv(data_dir + os.path.sep + 'train.tsv', sep='\t')
+    dev.to_csv(data_dir + os.path.sep + 'dev.tsv', sep='\t')
+    test.to_csv(data_dir + os.path.sep + 'test.tsv', sep='\t')
 
 
 def read_data_from_csv(data_dir):
-    train = pd.read_csv(data_dir + '\\train.tsv', sep='\t')
-    dev = pd.read_csv(data_dir + '\\dev.tsv', sep='\t')
-    test = pd.read_csv(data_dir + '\\test.tsv', sep='\t')
+    train = pd.read_csv(data_dir + os.path.sep + 'train.tsv', sep='\t')
+    dev = pd.read_csv(data_dir + os.path.sep + 'dev.tsv', sep='\t')
+    test = pd.read_csv(data_dir + os.path.sep + 'test.tsv', sep='\t')
 
     return train, dev, test
 
