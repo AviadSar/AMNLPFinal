@@ -10,6 +10,7 @@ class Logger(object):
             os.makedirs(self.logs_dir)
             print("creating dataset directory " + self.logs_dir)
 
+        self.experiment_name = os.path.basename(os.path.normpath(args.model_dir))
         self.train_loss = []
         self.eval_loss = []
         self.eval_accuracy = []
@@ -39,14 +40,14 @@ class Logger(object):
         plt.plot(range(1, len(self.eval_loss) + 1), self.eval_loss, label='evaluation')
         plt.xticks(range(1, len(self.train_loss) + 1))
         plt.legend(loc='upper right')
-        plt.title('Train and evaluation loss over training')
+        plt.title('Train and evaluation loss over training\n' + self.experiment_name)
         plt.savefig(self.logs_dir + os.path.sep + 'loss.jpg')
         plt.figure()
 
         plt.plot(range(1, len(self.eval_accuracy) + 1), self.eval_accuracy, label='evaluation accuracy')
         plt.xticks(range(1, len(self.eval_accuracy) + 1))
         plt.legend(loc='upper right')
-        plt.title('Evaluation accuracy over training')
+        plt.title('Evaluation accuracy over training\n' + self.experiment_name)
         plt.savefig(self.logs_dir + os.path.sep + 'accuracy.jpg')
         plt.figure()
 
