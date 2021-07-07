@@ -24,12 +24,12 @@ def parse_args():
 
 
 if __name__ == '__main__':
-    # args = parse_args()
-    #
+    args = parse_args()
+
     # if args.data_loader_args:
     #     os.system("data_loader.py --json_file " + args.data_loader_args)
     # if args.trainer_args:
-    #     os.system("trainer.py --json_file " + args.trainer_args)
+    #     os.system("python3 trainer.py --json_file " + args.trainer_args)
 
-    os.system("trainer.py --json_file " + "args/trainer_roberta_missing_second_last_paragraph_out_of_3_text_target_10k.json")
-    os.system("trainer.py --json_file " + "args/trainer_roberta_missing_second_last_sentence_out_of_5_text_target_10k.json")
+    os.system("python3 data_loader.py --json_file " + "linux_args/data_loader_missing_middle_5_sentences_out_of_11_text_target_100k.json")
+    os.system("python3 trainer.py --json_file " + "linux_args/trainer_roberta_missing_middle_5_sentences_out_of_11_text_target_100k.json")
