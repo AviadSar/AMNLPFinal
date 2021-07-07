@@ -10,6 +10,7 @@ class DataLoaderArgs(object):
             self.filtered_data_dir = json_data["filtered_data_dir"]
             self.final_data_dir = json_data["final_data_dir"]
             self.manipulation_func = json_data["manipulation_func"]
+            self.manipulation_func_args = json_data["manipulation_func_args"]
             self.clean_and_filter_funcs = json_data["clean_and_filter_funcs"]
 
 

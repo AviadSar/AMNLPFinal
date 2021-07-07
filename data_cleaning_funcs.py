@@ -1,4 +1,7 @@
 import re
+import nltk
+from nltk import tokenize
+nltk.download('punkt')
 
 
 class clip_to(object):
@@ -13,7 +16,7 @@ class clip_to(object):
 
 
 def num_lines(text):
-    return len(re.split(r'\.[^.]', text))
+    return len(tokenize.sent_tokenize(text))
 
 
 def num_paragraphs(text):
@@ -36,6 +39,26 @@ class longer_then_n_paragraphs(object):
     def __call__(self, dataset, *args, **kwargs):
         cleaned_dataset = dataset[dataset['text'].map(num_paragraphs) > self.paragraph_limit]
         return cleaned_dataset
+
+
+class truncate_to_n_sentences_single_row(object):
+    def __init__(self, n):
+        self.n = n
+
+    def __call__(self, row, *args, **kwargs):
+        lines = tokenize.sent_tokenize(row)
+        return ' '.join(lines[:self.n])
+
+
+class truncate_to_n_sentences(object):
+    def __init__(self, n):
+        self.n = n
+
+    def __call__(self, dataset, *args, **kwargs):
+        dataset['text'] = dataset['text'].apply(truncate_to_n_sentences_single_row(self.n))
+        dataset['len_lines'] = dataset['text'].apply(lambda text: len(tokenize.sent_tokenize(text)))
+        dataset = dataset[dataset['len_lines'] >= self.n]
+        return dataset
 
 
 def longest_sequence_single_row(row):
@@ -62,15 +85,18 @@ def omit_references(dataset):
 
 
 def get_data_cleaning_func_from_string(string):
-    if "clip_to" in string:
+    if 'clip_to' in string:
         clip_size = int(string[8:])
         return clip_to(clip_size)
-    elif "longer_then" in string and "sentences" in string:
-        sentences_limit = int(string[24:])
-        return longer_then_n_sentences(sentences_limit)
-    elif "longer_then" in string and "paragraphs" in string:
-        paragraphs_limit = int(string[25:])
-        return longer_then_n_paragraphs(paragraphs_limit)
+    elif 'longer_then' in string and 'sentences' in string:
+        n = int(string[24:])
+        return longer_then_n_sentences(n)
+    elif 'longer_then' in string and 'paragraphs' in string:
+        n = int(string[25:])
+        return longer_then_n_paragraphs(n)
+    elif 'truncate_to_n_sentences' in string:
+        n = int(string[24:])
+        return truncate_to_n_sentences(n)
     elif string == 'longest_sequence':
         return longest_sequence
     elif string == 'omit_references':
@@ -78,9 +104,9 @@ def get_data_cleaning_func_from_string(string):
     return None
 
 
-def get_data_cleaning_funcs_from_string_list(string_list):
+def get_data_cleaning_funcs_from_args(args):
     data_cleaning_funcs = []
-    for data_cleaning_funcs_string in string_list:
+    for data_cleaning_funcs_string in args.clean_and_filter_funcs:
         data_cleaning_func = get_data_cleaning_func_from_string(data_cleaning_funcs_string)
         if data_cleaning_func is None:
             return None

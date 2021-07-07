@@ -1,26 +1,39 @@
 import numpy as np
+import re
+import nltk
+from nltk import tokenize
+nltk.download('punkt')
+
+
+def get_n_sentences(text, n):
+    lines = tokenize.sent_tokenize(text)
+
+    if n is None:
+        return lines
+    else:
+        sequence_start_pos = np.random.randint(0, len(lines) - (n - 1), 1)[0]
+        return lines[sequence_start_pos: sequence_start_pos + n]
+
+
+def get_n_paragraphs(text, n):
+    paragraphs = text.split('\n')
+    sequence_start_pos = np.random.randint(0, len(paragraphs) - (n - 1), 1)[0]
+    return paragraphs[sequence_start_pos: sequence_start_pos + n]
 
 
 class remove_second_last_paragraph_out_of_n(object):
-    def __init__(self, num_paragraphs):
-        self.num_paragraphs = num_paragraphs
+    def __init__(self, n):
+        self.n = n
 
     def __call__(self, series, *args, **kwargs):
-        num_paragraphs = self.num_paragraphs
-        text = series['original_text']
-        paragraphs = text.split('\n')
-
-        sequence_start_pos = np.random.randint(0, len(paragraphs) - (num_paragraphs - 1), 1)[0]
-        if series['should_manipulate']:
-            paragraphs = paragraphs[sequence_start_pos: sequence_start_pos + num_paragraphs]
-        else:
-            paragraphs = paragraphs[sequence_start_pos: sequence_start_pos + num_paragraphs - 1]
+        n = self.n
+        paragraphs = get_n_paragraphs(series['original_text'], n)
 
         if series['should_manipulate']:
-            new_paragraphs = paragraphs[:-2] + [paragraphs[-1]]
-            series['text'] = '\n'.join(new_paragraphs)
+            series['text'] = '\n'.join(paragraphs[:-2] + [paragraphs[-1]])
             series['target'] = 1
         else:
+            paragraphs = paragraphs[: -1]
             series['text'] = '\n'.join(paragraphs)
             series['target'] = 0
 
@@ -28,24 +41,18 @@ class remove_second_last_paragraph_out_of_n(object):
 
 
 class remove_second_last_paragraph_out_of_n_text_target(object):
-    def __init__(self, num_paragraphs):
-        self.num_paragraphs = num_paragraphs
+    def __init__(self, n):
+        self.n = n
 
     def __call__(self, series, *args, **kwargs):
-        num_paragraphs = self.num_paragraphs
-        text = series['original_text']
-        paragraphs = text.split('\n')
-
-        sequence_start_pos = np.random.randint(0, len(paragraphs) - (num_paragraphs - 1), 1)[0]
-        if series['should_manipulate']:
-            paragraphs = paragraphs[sequence_start_pos: sequence_start_pos + num_paragraphs]
-        else:
-            paragraphs = paragraphs[sequence_start_pos: sequence_start_pos + num_paragraphs - 1]
+        n = self.n
+        paragraphs = get_n_paragraphs(series['original_text'], n)
 
         if series['should_manipulate']:
             series['text'] = '\n'.join(paragraphs[:-2] + [' <mask>' + paragraphs[-1]])
             series['target'] = '\n'.join(paragraphs[:-2] + [' <skip>' + paragraphs[-1]])
         else:
+            paragraphs = paragraphs[: -1]
             series['text'] = '\n'.join(paragraphs[:-1] + [' <mask>' + paragraphs[-1]])
             series['target'] = '\n'.join(paragraphs[:-1] + [' <no_skip>' + paragraphs[-1]])
 
@@ -63,8 +70,7 @@ def remove_second_last_paragraph(series):
             deleted_paragraph_index = -1
 
     if series['should_manipulate']:
-        new_paragraphs = paragraphs[:deleted_paragraph_index] + [paragraphs[deleted_paragraph_index + 1]]
-        series['text'] = '\n'.join(new_paragraphs)
+        series['text'] = '\n'.join(paragraphs[:deleted_paragraph_index] + [paragraphs[deleted_paragraph_index + 1]])
         series['target'] = 1
     else:
         series['text'] = '\n'.join(paragraphs[:deleted_paragraph_index + 2])
@@ -93,63 +99,97 @@ def remove_random_paragraph(series):
 
 
 class remove_second_last_sentence_out_of_n(object):
-    def __init__(self, num_sentences):
-        self.num_sentences = num_sentences
+    def __init__(self, n):
+        self.n = n
 
     def __call__(self, series, *args, **kwargs):
-        num_sentences = self.num_sentences
-        text = series['original_text']
-        lines = text.split('.')
-        if lines[-1]:
-            lines.append('')
-
-        sequence_start_pos = np.random.randint(0, len(lines) - num_sentences, 1)[0]
-        if series['should_manipulate']:
-            lines = lines[sequence_start_pos: sequence_start_pos + num_sentences]
-        else:
-            lines = lines[sequence_start_pos: sequence_start_pos + num_sentences - 1]
+        n = self.n
+        lines = get_n_sentences(series['original_text'], n)
 
         if series['should_manipulate']:
-            new_lines = lines[:-2] + [lines[-1], '']
-            series['text'] = '.'.join(new_lines)
+            series['text'] = ' '.join(lines[:-2] + [lines[-1]])
             series['target'] = 1
         else:
-            series['text'] = '.'.join(lines + [''])
+            lines = lines[: -1]
+            series['text'] = ' '.join(lines)
             series['target'] = 0
 
         return series
 
 
 class remove_second_last_sentence_out_of_n_text_target(object):
-    def __init__(self, num_sentences):
-        self.num_sentences = num_sentences
+    def __init__(self, n):
+        self.n = n
 
     def __call__(self, series, *args, **kwargs):
-        num_sentences = self.num_sentences
-        text = series['original_text']
-        lines = text.split('.')
-        if lines[-1]:
-            lines.append('')
-
-        sequence_start_pos = np.random.randint(0, len(lines) - num_sentences, 1)[0]
-        if series['should_manipulate']:
-            lines = lines[sequence_start_pos: sequence_start_pos + num_sentences]
-        else:
-            lines = lines[sequence_start_pos: sequence_start_pos + num_sentences - 1]
+        n = self.n
+        lines = get_n_sentences(series['original_text'], n)
 
         if series['should_manipulate']:
-            series['text'] = '.'.join(lines[:-2] + [' <mask>' + lines[-1], ''])
-            series['target'] = '.'.join(lines[:-2] + [' <skip>' + lines[-1], ''])
+            series['text'] = ' '.join(lines[:-2] + ['<mask> ' + lines[-1]])
+            series['target'] = ' '.join(lines[:-2] + ['<skip> ' + lines[-1]])
         else:
-            series['text'] = '.'.join(lines[:-1] + [' <mask>' + lines[-1], ''])
-            series['target'] = '.'.join(lines[:-1] + [' <no_skip>' + lines[-1], ''])
+            lines = lines[: -1]
+            series['text'] = ' '.join(lines[:-1] + ['<mask> ' + lines[-1]])
+            series['target'] = ' '.join(lines[:-1] + ['<no_skip> ' + lines[-1]])
+
+        return series
+
+
+class remove_middle_m_sentences_out_of_n(object):
+    def __init__(self, m, n):
+        self.m = m
+        self.n = n
+
+    def __call__(self, series, *args, **kwargs):
+        m = self.m
+        n = self.n
+        lines = get_n_sentences(series['original_text'], n)
+
+        removed_sequence_start_pos = (n - m) // 2
+        removed_sequence_end_pos = n - ((n - m) // 2)  # this index is already after the removed sequence
+
+        if series['should_manipulate']:
+            series['text'] = ' '.join(lines[: removed_sequence_start_pos] + lines[removed_sequence_end_pos:])
+            series['target'] = 1
+        else:
+            lines = lines[: -1]
+            series['text'] = ' '.join(lines)
+            series['target'] = 0
+
+        return series
+
+
+class remove_middle_m_sentences_out_of_n_text_target(object):
+    def __init__(self, m, n):
+        self.m = m
+        self.n = n
+
+    def __call__(self, series, *args, **kwargs):
+        m = self.m
+        n = self.n
+        lines = get_n_sentences(series['original_text'], n)
+
+        removed_sequence_start_pos = (n - m) // 2
+        removed_sequence_end_pos = n - ((n - m) // 2)  # this index is already after the removed sequence
+
+        if series['should_manipulate']:
+            lines[removed_sequence_end_pos] = '<mask> ' + lines[removed_sequence_end_pos]
+            series['text'] = ' '.join(lines[: removed_sequence_start_pos] + lines[removed_sequence_end_pos:])
+            lines[removed_sequence_end_pos] = '<skip> ' + lines[removed_sequence_end_pos][7:]
+            series['target'] = ' '.join(lines[: removed_sequence_start_pos] + lines[removed_sequence_end_pos:])
+        else:
+            lines = lines[: -self.m]
+            lines[removed_sequence_start_pos] = '<mask> ' + lines[removed_sequence_start_pos]
+            series['text'] = ' '.join(lines[:removed_sequence_start_pos] + lines[removed_sequence_start_pos:])
+            lines[removed_sequence_start_pos] = '<no_skip> ' + lines[removed_sequence_start_pos][7:]
+            series['target'] = ' '.join(lines[:removed_sequence_start_pos] + lines[removed_sequence_start_pos:])
 
         return series
 
 
 def remove_second_last_sentence(series):
-    text = series['original_text']
-    lines = text.split('.')
+    lines = get_n_sentences(series['original_text'], None)
 
     deleted_sentence_index = -1
     while deleted_sentence_index == -1:
@@ -158,11 +198,11 @@ def remove_second_last_sentence(series):
             deleted_sentence_index = -1
 
     if series['should_manipulate']:
-        new_lines = lines[:deleted_sentence_index] + [lines[deleted_sentence_index + 1], '']
-        series['text'] = '.'.join(new_lines)
+        new_lines = lines[:deleted_sentence_index] + [lines[deleted_sentence_index + 1]]
+        series['text'] = ' '.join(new_lines)
         series['target'] = 1
     else:
-        series['text'] = '.'.join(lines[:deleted_sentence_index + 2] + [''])
+        series['text'] = ' '.join(lines[:deleted_sentence_index + 2])
         series['target'] = 0
 
     return series
@@ -170,38 +210,45 @@ def remove_second_last_sentence(series):
 
 def remove_random_sentence(series):
     if series['should_manipulate']:
-        text = series['original_text']
-        lines = text.split('.')
+        lines = get_n_sentences(series['original_text'], None)
 
         deleted_sentence_index = -1
         while deleted_sentence_index == -1:
             deleted_sentence_index = np.random.randint(1, len(lines) - 2, 1)[0]
             if not lines[deleted_sentence_index]:
                 deleted_sentence_index = -1
+
         new_lines = lines[:deleted_sentence_index] + lines[deleted_sentence_index + 1:]
-        series['text'] = '.'.join(new_lines)
+        series['text'] = ' '.join(new_lines)
 
         new_lines[deleted_sentence_index] = '<skip>' + new_lines[deleted_sentence_index]
-        series['target'] = '.'.join(new_lines)
+        series['target'] = ' '.join(new_lines)
 
     return series
 
 
-def get_manipulation_func_from_string(string):
-    if 'remove_second_last_paragraph_out_of_n_text' in string:
-        return remove_second_last_paragraph_out_of_n_text_target(int(string[50:]))
-    elif 'remove_second_last_paragraph_out_of' in string:
-        return remove_second_last_paragraph_out_of_n(int(string[38:]))
-    elif string == 'remove_second_last_paragraph':
+def get_manipulation_func_from_args(args):
+    func_name = args.manipulation_func
+    func_args = args.manipulation_func_args
+
+    if func_name == 'remove_second_last_paragraph_out_of_n_text_target':
+        return remove_second_last_paragraph_out_of_n_text_target(func_args[0])
+    elif func_name == 'remove_second_last_paragraph_out_of_n':
+        return remove_second_last_paragraph_out_of_n(func_args[0])
+    elif func_name == 'remove_second_last_paragraph':
         return remove_second_last_paragraph
-    elif string == 'remove_random_paragraph':
+    elif func_name == 'remove_random_paragraph':
         return remove_random_paragraph
-    elif 'remove_second_last_sentence_out_of_n_text' in string:
-        return remove_second_last_sentence_out_of_n_text_target(int(string[49:]))
-    elif 'remove_second_last_sentence_out_of' in string:
-        return remove_second_last_sentence_out_of_n(int(string[37:]))
-    elif string == 'remove_second_last_sentence':
+    elif func_name == 'remove_middle_m_sentences_out_of_n_text_target':
+        return remove_middle_m_sentences_out_of_n_text_target(func_args[0], func_args[1])
+    elif func_name == 'remove_middle_m_sentences_out_of_n':
+        return remove_middle_m_sentences_out_of_n(func_args[0], func_args[1])
+    elif func_name == 'remove_second_last_sentence_out_of_n_text_target':
+        return remove_second_last_sentence_out_of_n_text_target(func_args[0])
+    elif func_name == 'remove_second_last_sentence_out_of_n':
+        return remove_second_last_sentence_out_of_n(func_args[0])
+    elif func_name == 'remove_second_last_sentence':
         return remove_second_last_sentence
-    elif string == 'remove_random_sentence':
+    elif func_name == 'remove_random_sentence':
         return remove_random_sentence
     return None

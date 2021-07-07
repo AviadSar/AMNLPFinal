@@ -7,8 +7,8 @@ from datasets import load_dataset
 import argparse
 from args_classes import DataLoaderArgs
 
-from manipulation_funcs import get_manipulation_func_from_string
-from data_cleaning_funcs import get_data_cleaning_funcs_from_string_list
+from manipulation_funcs import get_manipulation_func_from_args
+from data_cleaning_funcs import get_data_cleaning_funcs_from_args
 
 
 def parse_args():
@@ -130,6 +130,18 @@ def load_data(args):
     return datasets
 
 
+def print_samples(split):
+    samples_indices = np.random.randint(0, len(split['text']), 10)
+    for i in samples_indices:
+        print(i)
+        print("target")
+        print(split['target'][i])
+        print("text")
+        print(split['text'][i])
+        print("original_text")
+        print(split['original_text'][i])
+
+
 def make_dataset(data, args):
     splits = []
 
@@ -143,14 +155,7 @@ def make_dataset(data, args):
         split['should_manipulate'] = texts_to_manipulate_bools
 
         split = split.apply(args.manipulation_func, axis=1)
-        # for i in [1 ,4, 78, 106, 3457, 6778, 8955, 9998]:
-        #     print(i)
-        #     print("target")
-        #     print(split['target'][i])
-        #     print("text")
-        #     print(split['text'][i])
-        #     print("original_text")
-        #     print(split['original_text'][i])
+        print_samples(split)
         splits.append(split)
 
     write_data_as_csv(splits, args.final_data_dir)
@@ -158,8 +163,8 @@ def make_dataset(data, args):
 
 if __name__ == '__main__':
     args = parse_args()
-    args.manipulation_func = get_manipulation_func_from_string(args.manipulation_func)
-    args.clean_and_filter_funcs = get_data_cleaning_funcs_from_string_list(args.clean_and_filter_funcs)
+    args.manipulation_func = get_manipulation_func_from_args(args)
+    args.clean_and_filter_funcs = get_data_cleaning_funcs_from_args(args)
 
     if args.clean_and_filter_funcs:
         np.random.seed(42)

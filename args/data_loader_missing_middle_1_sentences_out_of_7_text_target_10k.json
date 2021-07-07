@@ -1,0 +1,13 @@
+{
+  "n_data_samples": 150000,
+  "wiki_dir": "C:\\my_documents\\datasets",
+  "filtered_data_dir": "C:\\my_documents\\datasets\\AMNLPFinal\\wiki_gt_7_sentences_10k",
+  "final_data_dir": "C:\\my_documents\\datasets\\AMNLPFinal\\missing_middle_1_sentences_out_of_7_text_target_10k",
+  "manipulation_func": "remove_middle_m_sentences_out_of_n_text_target",
+  "manipulation_func_args": [1, 7],
+  "clean_and_filter_funcs":
+     ["omit_references",
+      "longest_sequence",
+      "truncate_to_n_sentences_7",
+      "clip_to_10000"]
+}
