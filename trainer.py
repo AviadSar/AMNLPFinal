@@ -177,9 +177,9 @@ def set_trainer(args):
         save_strategy="no",
         save_total_limit=1,
         seed=42,
-        load_best_model_at_end=True,
-        metric_for_best_model='eval_accuracy',
-        greater_is_better=True
+        # load_best_model_at_end=True,
+        # metric_for_best_model='eval_accuracy',
+        # greater_is_better=True
     )
 
 
@@ -188,7 +188,8 @@ def set_trainer(args):
         args=training_args,                  # training arguments, defined above
         train_dataset=dataset[0],         # training dataset
         eval_dataset=dataset[1],          # evaluation dataset
-        callbacks=[EvaluateEachEpochCallback(), LogEachEpochCallback(), SaveEachEpochCallback()],
+        # callbacks=[EvaluateEachEpochCallback(), LogEachEpochCallback(), SaveEachEpochCallback()],
+        callbacks=[StopEachEpochCallback()],
         compute_metrics=compute_metrics(args)
     )
 
@@ -226,11 +227,12 @@ def train_and_eval(trainer, args):
 if __name__ == "__main__":
     args = parse_args()
     trainer = set_trainer(args)
+    train_and_eval(trainer, args)
 
-    try:
-        trainer.train(resume_from_checkpoint=True)
-    except Exception as e:
-        trainer.train()
-
-    trainer.save_model(args.model_dir)
-    trainer.save_state()
+    # try:
+    #     trainer.train(resume_from_checkpoint=True)
+    # except Exception as e:
+    #     trainer.train()
+    #
+    # trainer.save_model(args.model_dir)
+    # trainer.save_state()
