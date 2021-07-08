@@ -87,8 +87,8 @@ def log_from_trainer_state(trainer_state, model_dir):
 
     log_history = trainer_state.log_history
     for index, log in enumerate(log_history):
-        if 'train_loss' in log:
-            train_loss.append(log['train_loss'])
+        if 'loss' in log:
+            train_loss.append(log['loss'])
             train_steps.append(log['step'])
         if 'eval_loss' in log:
             eval_loss.append(log['eval_loss'])
