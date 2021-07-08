@@ -40,30 +40,34 @@ class Logger(object):
         if eval_accuracy > max(self.eval_accuracy):
             self.best_model_epoch = len(eval_accuracy)
 
-        write_json(self.train_loss, self.eval_loss, self.eval_accuracy, self.logs_dir)
-        draw_train_graphs(self.train_loss, self.eval_loss, self.eval_accuracy, self.experiment_name, self.logs_dir)
+        write_json(self.train_loss, range(1, len(self.train_loss) + 1), self.eval_loss, range(1, len(self.eval_loss) + 1), self.eval_accuracy, self.logs_dir)
+        draw_train_graphs(self.train_loss, range(1, len(self.train_loss) + 1), self.eval_loss, range(1, len(self.eval_loss) + 1), self.eval_accuracy, self.experiment_name, self.logs_dir)
 
 
-def write_json(train_loss, eval_loss, eval_accuracy, logs_dir):
-    data_dict = {'train_loss': train_loss, 'eval_loss': eval_loss, 'eval_accuracy': eval_accuracy,}
+def write_json(train_loss, train_steps, eval_loss, eval_steps, eval_accuracy, experiment_name, logs_dir):
+    data_dict = {'train_loss': train_loss, 'train_steps': train_steps, 'eval_loss': eval_loss, 'eval_steps': eval_steps, 'eval_accuracy': eval_accuracy, 'experiment_name': experiment_name}
 
     with open(logs_dir + os.path.sep + 'log.json', 'w') as json_file:
         json.dump(data_dict, json_file)
 
 
-def draw_train_graphs(train_loss, eval_loss, eval_accuracy, experiment_name, logs_dir):
-    plt.plot(range(1, len(train_loss) + 1), train_loss, label='train')
-    plt.plot(range(1, len(eval_loss) + 1), eval_loss, label='evaluation')
-    plt.xticks(range(1, len(train_loss) + 1))
+def draw_train_graphs(train_loss, train_steps, eval_loss, eval_steps, eval_accuracy, experiment_name, logs_dir):
+    plt.plot(train_steps, train_loss, label='train')
+    plt.plot(eval_steps, eval_loss, label='evaluation')
+    plt.xticks(train_steps)
     plt.legend(loc='upper right')
+    plt.xlabel("Steps")
+    plt.ylabel("Loss")
     plt.title('Train and evaluation loss over training\n' + experiment_name)
     plt.savefig(logs_dir + os.path.sep + 'loss.jpg')
     plt.close()
 
-    plt.plot(range(1, len(eval_accuracy) + 1), eval_accuracy, label='evaluation accuracy')
-    plt.xticks(range(1, len(eval_accuracy) + 1))
+    plt.plot(eval_steps, eval_accuracy, label='evaluation accuracy')
+    plt.xticks(train_steps)
     plt.legend(loc='upper right')
     plt.title('Evaluation accuracy over training\n' + experiment_name)
+    plt.xlabel("Steps")
+    plt.ylabel("Accuracy")
     plt.savefig(logs_dir + os.path.sep + 'accuracy.jpg')
     plt.close()
 
@@ -75,6 +79,24 @@ def log_from_trainer_state(trainer_state, model_dir):
         print("creating dataset directory " + logs_dir)
 
     experiment_name = os.path.basename(os.path.normpath(model_dir))
+    train_loss = []
+    train_steps = []
+    eval_loss = []
+    eval_accuracy = []
+    eval_steps = []
+
+    log_history = trainer_state.log_history
+    for index, log in enumerate(log_history):
+        if 'train_loss' in log:
+            train_loss.append(log['train_loss'])
+            train_steps.append(log['step'])
+        if 'eval_loss' in log:
+            eval_loss.append(log['eval_loss'])
+            eval_accuracy.append(log['eval_accuracy'])
+            eval_steps.append(log['step'])
+
+    draw_train_graphs(train_loss, train_steps, eval_loss, eval_steps, eval_accuracy, experiment_name, logs_dir)
+    write_json(train_loss, train_steps, eval_loss, eval_steps, eval_accuracy, experiment_name, logs_dir)
 
 
 def log_from_trainer_state_file(trainer_state_file, model_dir):

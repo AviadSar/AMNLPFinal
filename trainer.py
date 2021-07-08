@@ -11,7 +11,7 @@ from tokenizers import AddedToken
 import data_loader
 import dataset_classes
 from datasets import load_metric
-from logger import Logger
+from logger import Logger, log_from_trainer_state
 
 accuracy_metric = load_metric("accuracy")
 
@@ -153,22 +153,16 @@ def set_trainer(args):
         def on_epoch_end(self, args, state, control, logs=None, **kwargs):
             control.should_training_stop = True
 
-    class EvaluateEachEpochCallback(TrainerCallback):
-        def on_epoch_end(self, args, state, control, logs=None, **kwargs):
-            control.should_evaluate = True
+    class EvaluateAndSaveCallback(TrainerCallback):
+        def on_step_end(self, args, state, control, logs=None, **kwargs):
+            if state.global_step % args.eval_steps == 0:
+                control.should_evaluate = True
+                control.should_save = True
 
     class LoggingCallback(TrainerCallback):
         def on_step_end(self, callback_args, state, control, logs=None, **kwargs):
             if state.global_step % args.logging_steps == 0:
                 control.should_log = True
-
-        def on_epoch_end(self, callback_args, state, control, logs=None, **kwargs):
-            if state.global_step % args.logging_steps != 0:
-                control.should_log = True
-
-    class SaveEachEpochCallback(TrainerCallback):
-        def on_epoch_end(self, args, state, control, logs=None, **kwargs):
-            control.should_save = True
 
     training_args = TrainingArguments(
         output_dir=args.model_dir,          # output directory
@@ -178,8 +172,9 @@ def set_trainer(args):
         gradient_accumulation_steps=128 // args.batch_size,
         warmup_steps=500,                # number of warmup steps for learning rate scheduler
         weight_decay=0.01,               # strength of weight decay
-        logging_strategy='no',
         save_strategy='no',
+        logging_steps=args.logging_steps,
+        eval_steps=args.eval_steps,
         save_total_limit=1,
         seed=42,
         load_best_model_at_end=True,
@@ -193,8 +188,7 @@ def set_trainer(args):
         args=training_args,                  # training arguments, defined above
         train_dataset=dataset[0],         # training dataset
         eval_dataset=dataset[1],          # evaluation dataset
-        callbacks=[EvaluateEachEpochCallback(), LoggingCallback(), SaveEachEpochCallback()],
-        # callbacks=[StopEachEpochCallback()],
+        callbacks=[EvaluateAndSaveCallback(), LoggingCallback()],
         compute_metrics=compute_metrics(args)
     )
 
@@ -244,3 +238,4 @@ if __name__ == "__main__":
 
     trainer.save_model(args.model_dir)
     trainer.save_state()
+    log_from_trainer_state(trainer.state, args.model_dir)

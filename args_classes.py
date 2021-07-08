@@ -27,3 +27,4 @@ class TrainerArgs(object):
             self.batch_size = json_data["batch_size"]
             self.data_split_ratio = json_data["data_split_ratio"]
             self.logging_steps = json_data["logging_steps"]
+            self.eval_steps = json_data["eval_steps"]
