@@ -6,5 +6,6 @@
   "start_epoch": 0,
   "end_epoch": 50,
   "batch_size": 4,
-  "data_split_ratio": [1, 1, 1]
+  "data_split_ratio": [1, 1, 1],
+  "logging_steps": 50
 }
