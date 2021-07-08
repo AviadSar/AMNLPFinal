@@ -55,9 +55,7 @@ class Logger(object):
         # due to a bug in huggingface trainer, the training loss is zeroed after resuming from checkpoints,
         # and thus a manual calculation is required
         if self.train_loss:
-            self.train_loss.append(((self.train_loss[-1] * len(self.train_loss)) /
-                                   (len(self.train_loss) + 1))
-                                   + train_loss)
+            self.train_loss.append(train_loss * (len(self.train_loss) + 1))
         else:
             self.train_loss.append(train_loss)
         self.eval_loss.append(eval_loss)

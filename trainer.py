@@ -91,21 +91,12 @@ def get_model_from_string(args):
 
 
 def encode_targets_for_token_classification(split, ratio, tokenizer):
-    encoded_targets = tokenizer(split['target'].tolist()[:int(len(split) * ratio)], truncation=True, padding=True)['input_ids']
-    encoded_targets = np.array(encoded_targets)
+    encoded_targets_list = tokenizer(split['target'].tolist()[:int(len(split) * ratio)], truncation=True, padding=True)['input_ids']
+    encoded_targets = np.array(encoded_targets_list)
     encoded_targets[np.logical_and(encoded_targets != (len(tokenizer) - 2), encoded_targets != (len(tokenizer) - 1))] = -100
     encoded_targets[encoded_targets == (len(tokenizer) - 2)] = 0
     encoded_targets[encoded_targets == (len(tokenizer) - 1)] = 1
-    # for target in encoded_targets:
-    #     for index, val in enumerate(target):
-    #         # if the token is not one of the two special tokens <skip>, <no_skip>
-    #         if val not in [len(tokenizer) - 2, len(tokenizer) - 1]:
-    #             # huggingface's way of telling the trainer to ignore this token for loss calculations
-    #             target[index] = -100
-    #         elif val == len(tokenizer) - 2:
-    #             target[index] = 0
-    #         elif val == len(tokenizer) - 1:
-    #             target[index] = 1
+
     return encoded_targets.tolist()
 
 
@@ -162,6 +153,18 @@ def set_trainer(args):
         def on_epoch_end(self, args, state, control, logs=None, **kwargs):
             control.should_training_stop = True
 
+    class EvaluateEachEpochCallback(TrainerCallback):
+        def on_epoch_end(self, args, state, control, logs=None, **kwargs):
+            control.should_evaluate = True
+
+    class LogEachEpochCallback(TrainerCallback):
+        def on_epoch_end(self, args, state, control, logs=None, **kwargs):
+            control.should_log = True
+
+    class SaveEachEpochCallback(TrainerCallback):
+        def on_epoch_end(self, args, state, control, logs=None, **kwargs):
+            control.should_save = True
+
     training_args = TrainingArguments(
         output_dir=args.model_dir,          # output directory
         num_train_epochs=args.end_epoch,              # total number of training epochs
@@ -172,7 +175,11 @@ def set_trainer(args):
         weight_decay=0.01,               # strength of weight decay
         logging_steps=10,
         save_strategy="no",
+        save_total_limit=1,
         seed=42,
+        load_best_model_at_end=True,
+        metric_for_best_model='eval_accuracy',
+        greater_is_better=True
     )
 
 
@@ -180,8 +187,8 @@ def set_trainer(args):
         model=model,                         # the instantiated 🤗 Transformers model to be trained
         args=training_args,                  # training arguments, defined above
         train_dataset=dataset[0],         # training dataset
-        eval_dataset=dataset[1],           # evaluation dataset
-        callbacks=[StopEachEpochCallback()],
+        eval_dataset=dataset[1],          # evaluation dataset
+        callbacks=[EvaluateEachEpochCallback(), LogEachEpochCallback(), SaveEachEpochCallback()],
         compute_metrics=compute_metrics(args)
     )
 
@@ -216,4 +223,12 @@ def train_and_eval(trainer, args):
 if __name__ == "__main__":
     args = parse_args()
     trainer = set_trainer(args)
-    train_and_eval(trainer, args)
+    # train_and_eval(trainer, args)
+
+    try:
+        trainer.train(resume_from_checkpoint=True)
+    except Exception as e:
+        trainer.train()
+
+    trainer.save_model(args.model_dir)
+    trainer.save_state()
