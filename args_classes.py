@@ -25,3 +25,4 @@ class TrainerArgs(object):
             self.start_epoch = json_data["start_epoch"]
             self.end_epoch = json_data["end_epoch"]
             self.batch_size = json_data["batch_size"]
+            self.data_split_ratio = json_data["data_split_ratio"]
