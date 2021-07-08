@@ -92,17 +92,21 @@ def get_model_from_string(args):
 
 def encode_targets_for_token_classification(split, ratio, tokenizer):
     encoded_targets = tokenizer(split['target'].tolist()[:int(len(split) * ratio)], truncation=True, padding=True)['input_ids']
-    for target in encoded_targets:
-        for index, val in enumerate(target):
-            # if the token is not one of the two special tokens <skip>, <no_skip>
-            if val not in [len(tokenizer) - 2, len(tokenizer) - 1]:
-                # huggingface's way of telling the trainer to ignore this token for loss calculations
-                target[index] = -100
-            elif val == len(tokenizer) - 2:
-                target[index] = 0
-            elif val == len(tokenizer) - 1:
-                target[index] = 1
-    return encoded_targets
+    encoded_targets = np.array(encoded_targets)
+    encoded_targets[np.logical_and(encoded_targets != (len(tokenizer) - 2), encoded_targets != (len(tokenizer) - 1))] = -100
+    encoded_targets[encoded_targets == (len(tokenizer) - 2)] = 0
+    encoded_targets[encoded_targets == (len(tokenizer) - 1)] = 1
+    # for target in encoded_targets:
+    #     for index, val in enumerate(target):
+    #         # if the token is not one of the two special tokens <skip>, <no_skip>
+    #         if val not in [len(tokenizer) - 2, len(tokenizer) - 1]:
+    #             # huggingface's way of telling the trainer to ignore this token for loss calculations
+    #             target[index] = -100
+    #         elif val == len(tokenizer) - 2:
+    #             target[index] = 0
+    #         elif val == len(tokenizer) - 1:
+    #             target[index] = 1
+    return encoded_targets.tolist()
 
 
 def encode_targets(split, ratio, tokenizer, args):
@@ -162,7 +166,7 @@ def set_trainer(args):
         output_dir=args.model_dir,          # output directory
         num_train_epochs=args.end_epoch,              # total number of training epochs
         per_device_train_batch_size=args.batch_size,  # batch size per device during training
-        per_device_eval_batch_size=args.batch_size,   # batch size for evaluation
+        per_device_eval_batch_size=args.batch_size * 4,   # batch size for evaluation
         gradient_accumulation_steps=128 // args.batch_size,
         warmup_steps=500,                # number of warmup steps for learning rate scheduler
         weight_decay=0.01,               # strength of weight decay
