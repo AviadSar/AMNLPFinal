@@ -31,5 +31,5 @@ if __name__ == '__main__':
     # if args.trainer_args:
     #     os.system("python3 trainer.py --json_file " + args.trainer_args)
 
-    os.system("python3 data_loader.py --json_file " + "linux_args/data_loader_missing_middle_5_sentences_out_of_11_text_target_100k.json")
+    # os.system("python3 data_loader.py --json_file " + "linux_args/data_loader_missing_middle_5_sentences_out_of_11_text_target_100k.json")
     os.system("python3 trainer.py --json_file " + "linux_args/trainer_roberta_missing_middle_5_sentences_out_of_11_text_target_100k.json")

@@ -104,6 +104,7 @@ def encode_targets_for_token_classification(split, ratio, tokenizer):
                 target[index] = 1
     return encoded_targets
 
+
 def encode_targets(split, ratio, tokenizer, args):
     if args.model_type == 'sequence_classification':
         return split['target'].tolist()[:int(len(split) * ratio)]
