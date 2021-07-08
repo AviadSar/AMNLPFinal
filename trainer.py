@@ -196,6 +196,9 @@ def set_trainer(args):
 
 
 def train_and_eval(trainer, args):
+    """
+    my training loop. currently not used due to switch to huggingface's loop. keeping it here for future reference
+    """
     start_epoch, end_epoch, model_dir = args.start_epoch, args.end_epoch, args.model_dir
     logger = Logger(args, start_epoch)
     best_eval_accuracy = logger.best_eval_accuracy
@@ -223,7 +226,6 @@ def train_and_eval(trainer, args):
 if __name__ == "__main__":
     args = parse_args()
     trainer = set_trainer(args)
-    # train_and_eval(trainer, args)
 
     try:
         trainer.train(resume_from_checkpoint=True)
