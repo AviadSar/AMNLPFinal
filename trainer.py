@@ -230,7 +230,6 @@ def train_and_eval(trainer, args):
 if __name__ == "__main__":
     args = parse_args()
     trainer = set_trainer(args)
-    # train_and_eval(trainer, args)
 
     try:
         trainer.train(resume_from_checkpoint=True)
