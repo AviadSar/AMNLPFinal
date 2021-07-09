@@ -114,20 +114,23 @@ def load_data(args):
     wiki = load_dataset('wikipedia', "20200501.en", cache_dir=args.wiki_dir)
     n_data_samples = args.n_data_samples
 
-    selected_data_indices = np.random.choice(range(len(wiki['train'])), n_data_samples, replace=False)
+    if n_data_samples is None:
+        data = wiki['train']
+    else:
+        selected_data_indices = np.random.choice(range(len(wiki['train'])), n_data_samples, replace=False)
+        data = wiki['train'].select(selected_data_indices)
+    data = pd.DataFrame({'title': data['title'], 'text': data['text']})
 
-    data = wiki['train'].select(selected_data_indices)
-
-    train = pd.DataFrame({'title': data[:n_data_samples // 3]['title'], 'text': data[:n_data_samples // 3]['text']})
-    dev = pd.DataFrame({'title': data[n_data_samples // 3:(n_data_samples // 3) * 2]['title'], 'text': data[n_data_samples // 3:(n_data_samples // 3) * 2]['text']})
-    test = pd.DataFrame({'title': data[(n_data_samples // 3) * 2:]['title'], 'text': data[(n_data_samples // 3) * 2:]['text']})
-
-    datasets = [train, dev, test]
     for func in args.clean_and_filter_funcs:
-        for index, dataset in enumerate(datasets):
-            datasets[index] = func(dataset)
+        data = func(data)
 
-    return datasets
+    n_train_samples = args.n_train_samples
+    n_test_samples = args.n_test_samples
+    train = data[:][:n_train_samples]
+    dev = data[:][n_train_samples:n_train_samples + n_test_samples]
+    test = data[:][n_train_samples + n_test_samples:]
+
+    return [train, dev, test]
 
 
 def print_samples(split):

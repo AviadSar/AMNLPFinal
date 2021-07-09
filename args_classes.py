@@ -6,6 +6,8 @@ class DataLoaderArgs(object):
         with open(json_file, 'r') as json_file:
             json_data = json.load(json_file)
             self.n_data_samples = json_data["n_data_samples"]
+            self.n_train_samples = json_data["n_train_samples"]
+            self.n_test_samples = json_data["n_test_samples"]
             self.wiki_dir = json_data["wiki_dir"]
             self.filtered_data_dir = json_data["filtered_data_dir"]
             self.final_data_dir = json_data["final_data_dir"]
@@ -28,3 +30,4 @@ class TrainerArgs(object):
             self.data_split_ratio = json_data["data_split_ratio"]
             self.logging_steps = json_data["logging_steps"]
             self.eval_steps = json_data["eval_steps"]
+            self.dropout = json_data["dropout"]

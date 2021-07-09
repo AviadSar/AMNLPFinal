@@ -4,7 +4,7 @@ from nltk import tokenize
 nltk.download('punkt')
 
 
-class clip_to(object):
+class clip(object):
     def __init__(self, clip_size):
         self.clip_size = clip_size
 
@@ -84,10 +84,10 @@ def omit_references(dataset):
     return dataset
 
 
-def get_data_cleaning_func_from_string(string):
-    if 'clip_to' in string:
-        clip_size = int(string[8:])
-        return clip_to(clip_size)
+def get_data_cleaning_func_from_string(string, args):
+    if string == 'clip':
+        clip_size = args.n_train_samples + (2 * args.n_test_samples)
+        return clip(clip_size)
     elif 'longer_then' in string and 'sentences' in string:
         n = int(string[24:])
         return longer_then_n_sentences(n)
@@ -101,13 +101,13 @@ def get_data_cleaning_func_from_string(string):
         return longest_sequence
     elif string == 'omit_references':
         return omit_references
-    return None
+    raise ValueError('no such clean and filter function: ' + string)
 
 
 def get_data_cleaning_funcs_from_args(args):
     data_cleaning_funcs = []
     for data_cleaning_funcs_string in args.clean_and_filter_funcs:
-        data_cleaning_func = get_data_cleaning_func_from_string(data_cleaning_funcs_string)
+        data_cleaning_func = get_data_cleaning_func_from_string(data_cleaning_funcs_string, args)
         if data_cleaning_func is None:
             return None
         else:

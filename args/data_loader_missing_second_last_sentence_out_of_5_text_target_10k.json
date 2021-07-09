@@ -1,5 +1,7 @@
 {
   "n_data_samples": 90000,
+  "n_train_samples": 10000,
+  "n_test_samples": 10000,
   "wiki_dir": "C:\\my_documents\\datasets",
   "filtered_data_dir": "C:\\my_documents\\datasets\\AMNLPFinal\\wiki_gt_5_sentences_10k",
   "final_data_dir": "C:\\my_documents\\datasets\\AMNLPFinal\\missing_second_last_sentence_out_of_5_text_target_10k",
@@ -9,5 +11,5 @@
      ["omit_references",
       "longest_sequence",
       "longer_then_n_sentences_5",
-      "clip_to_10000"]
+      "clip"]
 }

@@ -6,7 +6,7 @@ import pandas as pd
 import argparse
 from args_classes import TrainerArgs
 from transformers import RobertaTokenizerFast, RobertaForSequenceClassification, RobertaForTokenClassification,\
-    Trainer, TrainingArguments, TrainerCallback
+    Trainer, TrainingArguments, TrainerCallback, RobertaConfig
 from tokenizers import AddedToken
 import data_loader
 import dataset_classes
@@ -81,12 +81,16 @@ def parse_args():
     return args
 
 
-def get_model_from_string(args):
+def get_model_from_args(args):
     if 'roberta' in args.model_name:
         if args.model_type == 'sequence_classification':
-            return RobertaForSequenceClassification.from_pretrained(args.model_name)
+            return RobertaForSequenceClassification.from_pretrained(args.model_name,
+                                                                    hidden_dropout_prob=args.dropout,
+                                                                    attention_probs_dropout_prob=args.dropout)
         elif args.model_type == 'token_classification':
-            return RobertaForTokenClassification.from_pretrained(args.model_name)
+            return RobertaForTokenClassification.from_pretrained(args.model_name,
+                                                                 hidden_dropout_prob=args.dropout,
+                                                                 attention_probs_dropout_prob=args.dropout)
     raise Exception('no such model: name "{}", type "{}"'.format(args.model_name, args.model_type))
 
 
@@ -129,7 +133,7 @@ def compute_metrics(args):
 def set_trainer(args):
     tokenizer = RobertaTokenizerFast.from_pretrained(args.model_name)
     tokenizer.add_special_tokens({"additional_special_tokens": [AddedToken('<skip>', lstrip=True), AddedToken('<no_skip>', lstrip=True)]})
-    model = get_model_from_string(args)
+    model = get_model_from_args(args)
     model.resize_token_embeddings(len(tokenizer))
 
     data = data_loader.read_data_from_csv(args.data_dir)
