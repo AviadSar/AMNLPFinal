@@ -113,6 +113,9 @@ def data_histograms(data):
 def load_data(args):
     wiki = load_dataset('wikipedia', "20200501.en", cache_dir=args.wiki_dir)
     n_data_samples = args.n_data_samples
+    n_train_samples = args.n_train_samples
+    n_test_samples = args.n_test_samples
+    n_required_samples = n_train_samples + (2 * n_test_samples)
 
     if n_data_samples is None:
         data = wiki['train']
@@ -133,10 +136,11 @@ def load_data(args):
             print('batch ' + str(batch_idx) + '. done applying function ' + str(func))
         batch_idx += 1
         clean_data = clean_data.append(batch, ignore_index=True)
+        if len(clean_data) >= n_required_samples:
+            break
 
-    n_train_samples = args.n_train_samples
-    n_test_samples = args.n_test_samples
-    clean_data = clip(n_train_samples + (2 * n_test_samples))(clean_data)
+    if len(clean_data) < n_required_samples:
+        raise ValueError('Not enough samples!')
     train = clean_data[:][:n_train_samples]
     dev = clean_data[:][n_train_samples:n_train_samples + n_test_samples]
     test = clean_data[:][n_train_samples + n_test_samples:]
