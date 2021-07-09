@@ -6,7 +6,7 @@
   "batch_size": 4,
   "data_split_ratio": [1, 1, 0],
   "logging_steps": 10,
-  "eval_steps": 10,
+  "eval_steps": 78,
   "num_evals": 50,
   "dropout": 0.1
 }
