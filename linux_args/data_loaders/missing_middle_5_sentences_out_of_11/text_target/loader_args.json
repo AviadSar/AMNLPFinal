@@ -10,6 +10,5 @@
   "clean_and_filter_funcs":
      ["omit_references",
       "longest_sequence",
-      "truncate_to_n_sentences_11",
-      "clip"]
+      "truncate_to_n_sentences_11"]
 }
