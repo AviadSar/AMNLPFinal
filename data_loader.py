@@ -134,10 +134,6 @@ def load_data(args):
         batch_idx += 1
         clean_data = clean_data.append(batch, ignore_index=True)
 
-    # for func in args.clean_and_filter_funcs:
-    #     data = func(data)
-    #     print('done applying function ' + str(func))
-
     n_train_samples = args.n_train_samples
     n_test_samples = args.n_test_samples
     clean_data = clip(n_train_samples + (2 * n_test_samples))(clean_data)
