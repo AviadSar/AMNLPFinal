@@ -173,7 +173,7 @@ def make_dataset(data, args):
         split['should_manipulate'] = texts_to_manipulate_bools
 
         split = split.apply(args.manipulation_func, axis=1)
-        # print_samples(split)
+        print_samples(split)
         splits.append(split)
 
     write_data_as_csv(splits, args.final_data_dir)

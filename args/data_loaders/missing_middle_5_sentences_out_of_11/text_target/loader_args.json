@@ -1,5 +1,5 @@
 {
-  "n_data_samples": 2000000,
+  "n_data_samples": null,
   "n_train_samples": 1000000,
   "n_test_samples": 10000,
   "wiki_dir": "C:\\my_documents\\datasets",
