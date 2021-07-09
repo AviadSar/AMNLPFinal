@@ -94,23 +94,6 @@ def get_model_from_args(args):
     raise Exception('no such model: name "{}", type "{}"'.format(args.model_name, args.model_type))
 
 
-def encode_targets_for_token_classification(split, ratio, tokenizer):
-    encoded_targets_list = tokenizer(split['target'].tolist()[:int(len(split) * ratio)], truncation=True, padding=True)['input_ids']
-    encoded_targets = np.array(encoded_targets_list)
-    encoded_targets[np.logical_and(encoded_targets != (len(tokenizer) - 2), encoded_targets != (len(tokenizer) - 1))] = -100
-    encoded_targets[encoded_targets == (len(tokenizer) - 2)] = 0
-    encoded_targets[encoded_targets == (len(tokenizer) - 1)] = 1
-
-    return encoded_targets.tolist()
-
-
-def encode_targets(split, ratio, tokenizer, args):
-    if args.model_type == 'sequence_classification':
-        return split['target'].tolist()[:int(len(split) * ratio)]
-    elif args.model_type == 'token_classification':
-        return encode_targets_for_token_classification(split, ratio, tokenizer)
-
-
 def compute_token_accuracy(eval_pred):
     logits, labels = eval_pred
     predictions = np.argmax(logits, axis=-1)
@@ -130,28 +113,79 @@ def compute_metrics(args):
         return compute_sequence_accuracy
 
 
-def set_trainer(args):
-    tokenizer = RobertaTokenizerFast.from_pretrained(args.model_name)
-    tokenizer.add_special_tokens({"additional_special_tokens": [AddedToken('<skip>', lstrip=True), AddedToken('<no_skip>', lstrip=True)]})
-    model = get_model_from_args(args)
-    model.resize_token_embeddings(len(tokenizer))
+def encode_targets_for_token_classification(batch_target, tokenizer):
+    encoded_targets_list = tokenizer(batch_target, return_attention_mask=False, truncation=True, padding='max_length')['input_ids']
+    encoded_targets = np.array(encoded_targets_list)
+    encoded_targets[np.logical_and(encoded_targets != (len(tokenizer) - 2), encoded_targets != (len(tokenizer) - 1))] = -100
+    encoded_targets[encoded_targets == (len(tokenizer) - 2)] = 0
+    encoded_targets[encoded_targets == (len(tokenizer) - 1)] = 1
 
+    return encoded_targets.tolist()
+
+
+def encode_targets(batch_target, tokenizer, args):
+    if args.model_type == 'sequence_classification':
+        return batch_target
+    elif args.model_type == 'token_classification':
+        return encode_targets_for_token_classification(batch_target, tokenizer)
+
+
+def load_and_tokenize_dataset(args, tokenizer):
     data = data_loader.read_data_from_csv(args.data_dir)
     # the ratio of train/dev/test sets where 1 is the full size of each the set
     splits_ratio = args.data_split_ratio
 
     tokenized_data = []
     for split, ratio in zip(data, splits_ratio):
-        tokenized_data.append(
-            {
-                'encoded_text': tokenizer(split['text'].tolist()[:int(len(split) * ratio)], truncation=True, padding=True),
-                'encoded_target': encode_targets(split, ratio, tokenizer, args)
+        text = split['text'].tolist()[:int(len(split) * ratio)]
+        target = split['target'].tolist()[:int(len(split) * ratio)]
+        n_samples = len(text)
+        if n_samples == 0:
+            continue
+
+        batch_size = 10000
+        batch_idx = 0
+        while batch_idx * batch_size < n_samples:
+            batch_text = text[batch_idx * batch_size: min((batch_idx + 1) * batch_size, n_samples)]
+            batch_target = target[batch_idx * batch_size: min((batch_idx + 1) * batch_size, n_samples)]
+
+            encoded_batch_split = {
+                'encoded_text': tokenizer(batch_text, return_attention_mask=False, truncation=True, padding='max_length'),
+                'encoded_target': encode_targets(batch_target , tokenizer, args)
             }
-        )
+
+            if batch_idx == 0:
+                tokenized_data.append(encoded_batch_split)
+            else:
+                encoded_split = tokenized_data[-1]
+                encoded_split['encoded_text'].data['input_ids'].extend(encoded_batch_split['encoded_text'].data['input_ids'])
+                encoded_split['encoded_text'].encodings.extend(encoded_batch_split['encoded_text'].encodings)
+                encoded_split['encoded_target'].extend(encoded_batch_split['encoded_target'])
+            print('batch ' + str(batch_idx) + ' done.')
+            batch_idx += 1
+
+        # tokenized_data.append(
+        #     {
+        #         'encoded_text': tokenizer(split['text'].tolist()[:int(len(split) * ratio)], return_attention_mask=False,
+        #                                   truncation=True, padding='max_length'),
+        #         'encoded_target': encode_targets(split, ratio, tokenizer, args)
+        #     }
+        # )
 
     dataset = []
     for split in tokenized_data:
         dataset.append(dataset_classes.TextDataset(split['encoded_text'], split['encoded_target']))
+
+    return dataset
+
+
+def set_trainer(args):
+    tokenizer = RobertaTokenizerFast.from_pretrained(args.model_name)
+    tokenizer.add_special_tokens({"additional_special_tokens": [AddedToken('<skip>', lstrip=True), AddedToken('<no_skip>', lstrip=True)]})
+    model = get_model_from_args(args)
+    model.resize_token_embeddings(len(tokenizer))
+
+    dataset = load_and_tokenize_dataset(args, tokenizer)
 
     class StopEachEpochCallback(TrainerCallback):
         def on_epoch_end(self, args, state, control, logs=None, **kwargs):
@@ -169,13 +203,13 @@ def set_trainer(args):
                 control.should_log = True
 
     training_args = TrainingArguments(
-        output_dir=args.model_dir,          # output directory
-        num_train_epochs=args.end_epoch,              # total number of training epochs
-        per_device_train_batch_size=args.batch_size,  # batch size per device during training
-        per_device_eval_batch_size=args.batch_size * 4,   # batch size for evaluation
+        output_dir=args.model_dir,
+        max_steps=args.eval_steps * args.num_evals,
+        per_device_train_batch_size=args.batch_size,
+        per_device_eval_batch_size=args.batch_size * 4,
         gradient_accumulation_steps=128 // args.batch_size,
-        warmup_steps=500,                # number of warmup steps for learning rate scheduler
-        weight_decay=0.01,               # strength of weight decay
+        warmup_steps=500,
+        weight_decay=0.01,
         save_strategy='no',
         logging_steps=args.logging_steps,
         eval_steps=args.eval_steps,
@@ -188,10 +222,10 @@ def set_trainer(args):
 
 
     trainer = Trainer(
-        model=model,                         # the instantiated 🤗 Transformers model to be trained
-        args=training_args,                  # training arguments, defined above
-        train_dataset=dataset[0],         # training dataset
-        eval_dataset=dataset[1],          # evaluation dataset
+        model=model,
+        args=training_args,
+        train_dataset=dataset[0],
+        eval_dataset=dataset[1],
         callbacks=[EvaluateAndSaveCallback(), LoggingCallback()],
         compute_metrics=compute_metrics(args)
     )
