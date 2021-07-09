@@ -137,40 +137,42 @@ def load_and_tokenize_dataset(args, tokenizer):
 
     tokenized_data = []
     for split, ratio in zip(data, splits_ratio):
+        if ratio == 0:
+            continue
         text = split['text'].tolist()[:int(len(split) * ratio)]
         target = split['target'].tolist()[:int(len(split) * ratio)]
-        n_samples = len(text)
-        if n_samples == 0:
-            continue
-
-        batch_size = 10000
-        batch_idx = 0
-        while batch_idx * batch_size < n_samples:
-            batch_text = text[batch_idx * batch_size: min((batch_idx + 1) * batch_size, n_samples)]
-            batch_target = target[batch_idx * batch_size: min((batch_idx + 1) * batch_size, n_samples)]
-
-            encoded_batch_split = {
-                'encoded_text': tokenizer(batch_text, return_attention_mask=False, truncation=True, padding='max_length'),
-                'encoded_target': encode_targets(batch_target , tokenizer, args)
-            }
-
-            if batch_idx == 0:
-                tokenized_data.append(encoded_batch_split)
-            else:
-                encoded_split = tokenized_data[-1]
-                encoded_split['encoded_text'].data['input_ids'].extend(encoded_batch_split['encoded_text'].data['input_ids'])
-                encoded_split['encoded_text'].encodings.extend(encoded_batch_split['encoded_text'].encodings)
-                encoded_split['encoded_target'].extend(encoded_batch_split['encoded_target'])
-            print('batch ' + str(batch_idx) + ' done.')
-            batch_idx += 1
-
-        # tokenized_data.append(
-        #     {
-        #         'encoded_text': tokenizer(split['text'].tolist()[:int(len(split) * ratio)], return_attention_mask=False,
-        #                                   truncation=True, padding='max_length'),
-        #         'encoded_target': encode_targets(split, ratio, tokenizer, args)
+        # n_samples = len(text)
+        # if n_samples == 0:
+        #     continue
+        #
+        # batch_size = 10000
+        # batch_idx = 0
+        # while batch_idx * batch_size < n_samples:
+        #     batch_text = text[batch_idx * batch_size: min((batch_idx + 1) * batch_size, n_samples)]
+        #     batch_target = target[batch_idx * batch_size: min((batch_idx + 1) * batch_size, n_samples)]
+        #
+        #     encoded_batch_split = {
+        #         'encoded_text': tokenizer(batch_text, return_attention_mask=False, truncation=True, padding='max_length'),
+        #         'encoded_target': encode_targets(batch_target , tokenizer, args)
         #     }
-        # )
+        #
+        #     if batch_idx == 0:
+        #         tokenized_data.append(encoded_batch_split)
+        #     else:
+        #         encoded_split = tokenized_data[-1]
+        #         encoded_split['encoded_text'].data['input_ids'].extend(encoded_batch_split['encoded_text'].data['input_ids'])
+        #         encoded_split['encoded_text'].encodings.extend(encoded_batch_split['encoded_text'].encodings)
+        #         encoded_split['encoded_target'].extend(encoded_batch_split['encoded_target'])
+        #     print('batch ' + str(batch_idx) + ' done.')
+        #     batch_idx += 1
+
+        tokenized_data.append(
+            {
+                'encoded_text': tokenizer(text, return_attention_mask=False,
+                                          truncation=True, padding='max_length'),
+                'encoded_target': encode_targets(target, tokenizer, args)
+            }
+        )
 
     dataset = []
     for split in tokenized_data:
