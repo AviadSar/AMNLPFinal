@@ -8,7 +8,7 @@ import argparse
 from args_classes import DataLoaderArgs
 
 from manipulation_funcs import get_manipulation_func_from_args
-from data_cleaning_funcs import get_data_cleaning_funcs_from_args
+from data_cleaning_funcs import get_data_cleaning_funcs_from_args, clip
 
 
 def parse_args():
@@ -119,16 +119,31 @@ def load_data(args):
     else:
         selected_data_indices = np.random.choice(range(len(wiki['train'])), n_data_samples, replace=False)
         data = wiki['train'].select(selected_data_indices)
-    data = pd.DataFrame({'title': data['title'], 'text': data['text']})
 
-    for func in args.clean_and_filter_funcs:
-        data = func(data)
+    clean_data = pd.DataFrame(columns=['title', 'text'])
+    batch_size = 10000
+    batch_idx = 0
+    while batch_idx * batch_size < len(data):
+        batch = pd.DataFrame({
+            'title': data.select(range(batch_idx * batch_size, min((batch_idx + 1) * batch_size, len(data))))['title'],
+            'text': data.select(range(batch_idx * batch_size, min((batch_idx + 1) * batch_size, len(data))))['text']
+        })
+        for func in args.clean_and_filter_funcs:
+            batch = func(batch)
+            print('batch ' + str(batch_idx) + '. done applying function ' + str(func))
+        batch_idx += 1
+        clean_data = clean_data.append(batch, ignore_index=True)
+
+    # for func in args.clean_and_filter_funcs:
+    #     data = func(data)
+    #     print('done applying function ' + str(func))
 
     n_train_samples = args.n_train_samples
     n_test_samples = args.n_test_samples
-    train = data[:][:n_train_samples]
-    dev = data[:][n_train_samples:n_train_samples + n_test_samples]
-    test = data[:][n_train_samples + n_test_samples:]
+    clean_data = clip(n_train_samples + (2 * n_test_samples))(clean_data)
+    train = clean_data[:][:n_train_samples]
+    dev = clean_data[:][n_train_samples:n_train_samples + n_test_samples]
+    test = clean_data[:][n_train_samples + n_test_samples:]
 
     return [train, dev, test]
 
