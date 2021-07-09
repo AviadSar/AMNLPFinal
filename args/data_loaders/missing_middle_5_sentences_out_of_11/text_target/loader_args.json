@@ -1,5 +1,5 @@
 {
-  "n_data_samples": null,
+  "n_data_samples": 2000000,
   "n_train_samples": 1000000,
   "n_test_samples": 10000,
   "wiki_dir": "C:\\my_documents\\datasets",
@@ -10,6 +10,5 @@
   "clean_and_filter_funcs":
      ["omit_references",
       "longest_sequence",
-      "truncate_to_n_sentences_11",
-      "clip"]
+      "truncate_to_n_sentences_11"]
 }
