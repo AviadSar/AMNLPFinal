@@ -143,7 +143,7 @@ def load_data(args):
         raise ValueError('Not enough samples!')
     train = clean_data[:][:n_train_samples]
     dev = clean_data[:][n_train_samples:n_train_samples + n_test_samples]
-    test = clean_data[:][n_train_samples + n_test_samples:]
+    test = clean_data[:][n_train_samples + n_test_samples: n_required_samples]
 
     return [train, dev, test]
 
