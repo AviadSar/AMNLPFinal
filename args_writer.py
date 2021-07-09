@@ -24,13 +24,13 @@ for os_idx, operating_system in enumerate(operating_systems):
                         if operating_system == 'windows':
                             args_file_dir = operating_system + '_args\\trainers\\' + model_name + '\\' + task_name + '\\' + target + '\\' + size + '\\' + str(dropout)
                             args_file = '\\trainer_args.json'
-                            data_dir = r'C:\\my_documents\\AMNLPFinal\\datasets\\' + task_name + r'\\' + target
-                            model_dir = r'C:\\my_documents\\AMNLPFinal\\models\\' + model_name + r'\\' + task_name + r'\\' + target + r'\\' + size + r'\\' + str(dropout)
+                            data_dir = 'C:\\my_documents\\AMNLPFinal\\datasets\\' + task_name + '\\' + target
+                            model_dir = 'C:\\my_documents\\AMNLPFinal\\models\\' + model_name + '\\' + task_name + '\\' + target + '\\' + size + '\\' + str(dropout)
                         elif operating_system == 'linux':
                             args_file_dir = operating_system + r'_args/trainers/' + model_name + '/' + task_name + '/' + target + '/' + size + '/' + str(dropout)
                             args_file = '/trainer_args.json'
-                            data_dir = r'/home/aviad/Documents/AMNLPFinal/datasets/' + task_name + r'/' + target
-                            model_dir = r'/home/aviad/Documents/AMNLPFinal/models/' + model_name + r'/' + task_name + r'/' + target + r'/' + size + r'/' + str(dropout)
+                            data_dir = '/home/aviad/Documents/AMNLPFinal/datasets/' + task_name + '/' + target
+                            model_dir = '/home/aviad/Documents/AMNLPFinal/models/' + model_name + '/' + task_name + '/' + target + '/' + size + '/' + str(dropout)
                         else:
                             raise ValueError('No such operating system: ' + operating_system)
 
@@ -51,4 +51,4 @@ for os_idx, operating_system in enumerate(operating_systems):
                             os.makedirs(args_file_dir)
                             print("creating dataset directory " + args_file_dir)
                         with open(args_file_dir + args_file, 'w') as json_file:
-                            json.dump(data_dict, json_file)
+                            json.dump(data_dict, json_file, indent=4)
