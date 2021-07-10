@@ -14,7 +14,7 @@ model_types = ['token_classification']
 model_names = ['roberta-base']
 targets = ['text_target']
 
-dropouts = [0.1, 0.125, 0.15]
+dropouts = [0.1, 0.11, 0.125, 0.15]
 
 for os_idx, operating_system in enumerate(operating_systems):
     for model_name in model_names:
