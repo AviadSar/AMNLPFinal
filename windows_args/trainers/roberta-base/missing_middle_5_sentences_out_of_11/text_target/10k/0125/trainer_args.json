@@ -1,6 +1,6 @@
 {
     "data_dir": "C:\\my_documents\\AMNLPFinal\\datasets\\missing_middle_5_sentences_out_of_11\\text_target",
-    "model_dir": "C:\\my_documents\\AMNLPFinal\\models\\roberta-base\\missing_middle_5_sentences_out_of_11\\text_target\\10k\\02",
+    "model_dir": "C:\\my_documents\\AMNLPFinal\\models\\roberta-base\\missing_middle_5_sentences_out_of_11\\text_target\\10k\\0125",
     "model_name": "roberta-base",
     "model_type": "token_classification",
     "batch_size": 4,
@@ -12,5 +12,5 @@
     "logging_steps": 10,
     "eval_steps": 78,
     "num_evals": 50,
-    "dropout": 0.2
+    "dropout": 0.125
 }

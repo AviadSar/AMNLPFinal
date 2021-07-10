@@ -14,7 +14,7 @@ model_types = ['token_classification']
 model_names = ['roberta-base']
 targets = ['text_target']
 
-dropouts = [0.1, 0.2, 0.3]
+dropouts = [0.1, 0.125, 0.15]
 
 for os_idx, operating_system in enumerate(operating_systems):
     for model_name in model_names:
@@ -23,15 +23,15 @@ for os_idx, operating_system in enumerate(operating_systems):
                 for size_idx, size in enumerate(sizes):
                     for dropout in dropouts:
                         if operating_system == 'windows':
-                            args_file_dir = operating_system + '_args\\trainers\\' + model_name + '\\' + task_name + '\\' + target + '\\' + size + '\\' + '0' + str(int(dropout * 10))
+                            args_file_dir = operating_system + '_args\\trainers\\' + model_name + '\\' + task_name + '\\' + target + '\\' + size + '\\' + str(dropout)[0] + str(dropout)[2:]
                             args_file = '\\trainer_args.json'
                             data_dir = 'C:\\my_documents\\AMNLPFinal\\datasets\\' + task_name + '\\' + target
-                            model_dir = 'C:\\my_documents\\AMNLPFinal\\models\\' + model_name + '\\' + task_name + '\\' + target + '\\' + size + '\\' + '0' + str(int(dropout * 10))
+                            model_dir = 'C:\\my_documents\\AMNLPFinal\\models\\' + model_name + '\\' + task_name + '\\' + target + '\\' + size + '\\' + str(dropout)[0] + str(dropout)[2:]
                         elif operating_system == 'linux':
-                            args_file_dir = operating_system + r'_args/trainers/' + model_name + '/' + task_name + '/' + target + '/' + size + '/' + '0' + str(int(dropout * 10))
+                            args_file_dir = operating_system + r'_args/trainers/' + model_name + '/' + task_name + '/' + target + '/' + size + '/' + str(dropout)[0] + str(dropout)[2:]
                             args_file = '/trainer_args.json'
                             data_dir = '/home/aviad/Documents/AMNLPFinal/datasets/' + task_name + '/' + target
-                            model_dir = '/home/aviad/Documents/AMNLPFinal/models/' + model_name + '/' + task_name + '/' + target + '/' + size + '/' + '0' + str(int(dropout * 10))
+                            model_dir = '/home/aviad/Documents/AMNLPFinal/models/' + model_name + '/' + task_name + '/' + target + '/' + size + '/' + str(dropout)[0] + str(dropout)[2:]
                         else:
                             raise ValueError('No such operating system: ' + operating_system)
 
