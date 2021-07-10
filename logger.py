@@ -54,7 +54,7 @@ def write_json(train_loss, train_steps, eval_loss, eval_steps, eval_accuracy, ex
 def draw_train_graphs(train_loss, train_steps, eval_loss, eval_steps, eval_accuracy, experiment_name, logs_dir):
     plt.plot(train_steps, train_loss, label='train')
     plt.plot(eval_steps, eval_loss, label='evaluation')
-    plt.xticks(train_steps)
+    # plt.xticks(train_steps)
     plt.legend(loc='upper right')
     plt.xlabel("Steps")
     plt.ylabel("Loss")
@@ -63,7 +63,7 @@ def draw_train_graphs(train_loss, train_steps, eval_loss, eval_steps, eval_accur
     plt.close()
 
     plt.plot(eval_steps, eval_accuracy, label='evaluation accuracy')
-    plt.xticks(train_steps)
+    # plt.xticks(train_steps)
     plt.legend(loc='upper right')
     plt.title('Evaluation accuracy over training\n' + experiment_name)
     plt.xlabel("Steps")
