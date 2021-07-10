@@ -31,9 +31,8 @@ if __name__ == '__main__':
     # if args.trainer_args:
     #     os.system("python3 trainer.py --json_file " + args.trainer_args)
 
-    # os.system("python3 trainer.py --json_file " + "linux_args/trainers/roberta-base/missing_middle_5_sentences_out_of_11/text_target/100k/01/trainer_args.json")
-    os.system("python3 trainer.py --json_file " + "linux_args/trainers/roberta-base/missing_middle_5_sentences_out_of_11/text_target/100k/02/trainer_args.json")
-    os.system("python3 trainer.py --json_file " + "linux_args/trainers/roberta-base/missing_middle_5_sentences_out_of_11/text_target/100k/03/trainer_args.json")
+    os.system("python3 trainer.py --json_file " + "linux_args/trainers/roberta-base/missing_middle_5_sentences_out_of_11/text_target/100k/0125/trainer_args.json")
+    os.system("python3 trainer.py --json_file " + "linux_args/trainers/roberta-base/missing_middle_5_sentences_out_of_11/text_target/100k/015/trainer_args.json")
     os.system("python3 trainer.py --json_file " + "linux_args/trainers/roberta-base/missing_middle_5_sentences_out_of_11/text_target/10k/01/trainer_args.json")
-    os.system("python3 trainer.py --json_file " + "linux_args/trainers/roberta-base/missing_middle_5_sentences_out_of_11/text_target/10k/02/trainer_args.json")
-    os.system("python3 trainer.py --json_file " + "linux_args/trainers/roberta-base/missing_middle_5_sentences_out_of_11/text_target/10k/03/trainer_args.json")
+    os.system("python3 trainer.py --json_file " + "linux_args/trainers/roberta-base/missing_middle_5_sentences_out_of_11/text_target/10k/0125/trainer_args.json")
+    os.system("python3 trainer.py --json_file " + "linux_args/trainers/roberta-base/missing_middle_5_sentences_out_of_11/text_target/10k/015/trainer_args.json")
