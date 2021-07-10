@@ -1,0 +1,16 @@
+{
+    "data_dir": "/home/aviad/Documents/AMNLPFinal/datasets/missing_middle_5_sentences_out_of_11/text_target",
+    "model_dir": "/home/aviad/Documents/AMNLPFinal/models/roberta-base/missing_middle_5_sentences_out_of_11/text_target/100k/011",
+    "model_name": "roberta-base",
+    "model_type": "token_classification",
+    "batch_size": 16,
+    "data_split_ratio": [
+        0.1,
+        1,
+        0
+    ],
+    "logging_steps": 10,
+    "eval_steps": 78,
+    "num_evals": 100,
+    "dropout": 0.11
+}
