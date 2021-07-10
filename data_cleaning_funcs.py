@@ -105,6 +105,8 @@ def get_data_cleaning_func_from_string(string, args):
 
 
 def get_data_cleaning_funcs_from_args(args):
+    if args.clean_and_filter_funcs is None:
+        return None
     data_cleaning_funcs = []
     for data_cleaning_funcs_string in args.clean_and_filter_funcs:
         data_cleaning_func = get_data_cleaning_func_from_string(data_cleaning_funcs_string, args)
