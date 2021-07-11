@@ -78,7 +78,8 @@ def log_from_trainer_state(trainer_state, model_dir):
         os.makedirs(logs_dir)
         print("creating dataset directory " + logs_dir)
 
-    experiment_name = os.path.basename(os.path.normpath(model_dir))
+    experiment_name = os.path.normpath(model_dir)
+    experiment_name = '-'.join(experiment_name.split(os.sep))
     train_loss = []
     train_steps = []
     eval_loss = []
