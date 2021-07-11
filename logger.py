@@ -72,14 +72,22 @@ def draw_train_graphs(train_loss, train_steps, eval_loss, eval_steps, eval_accur
     plt.close()
 
 
+def get_experiment_name_from_dir(model_dir):
+    experiment_name = os.path.normpath(model_dir)
+    experiment_name = experiment_name.split(os.sep)
+    if len(experiment_name) > 2:
+        experiment_name[2] = experiment_name[2] + '\n'
+    experiment_name = '-'.join(experiment_name.split(os.sep))
+    return experiment_name
+
+
 def log_from_trainer_state(trainer_state, model_dir):
     logs_dir = model_dir + os.path.sep + 'logs'
     if not os.path.isdir(logs_dir):
         os.makedirs(logs_dir)
         print("creating dataset directory " + logs_dir)
 
-    experiment_name = os.path.normpath(model_dir)
-    experiment_name = '-'.join(experiment_name.split(os.sep))
+    experiment_name = get_experiment_name_from_dir(model_dir)
     train_loss = []
     train_steps = []
     eval_loss = []
