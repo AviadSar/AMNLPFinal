@@ -23,7 +23,7 @@ def num_paragraphs(text):
     return len(text.split('\n'))
 
 
-class longer_then_n_sentences(object):
+class longer_than_n_sentences(object):
     def __init__(self, sentences_limit):
         self.sentences_limit = sentences_limit
 
@@ -32,7 +32,7 @@ class longer_then_n_sentences(object):
         return cleaned_dataset
 
 
-class longer_then_n_paragraphs(object):
+class longer_than_n_paragraphs(object):
     def __init__(self, paragraph_limit):
         self.paragraph_limit = paragraph_limit
 
@@ -88,12 +88,12 @@ def get_data_cleaning_func_from_string(string, args):
     if string == 'clip':
         clip_size = args.n_train_samples + (2 * args.n_test_samples)
         return clip(clip_size)
-    elif 'longer_then' in string and 'sentences' in string:
+    elif 'longer_than' in string and 'sentences' in string:
         n = int(string[24:])
-        return longer_then_n_sentences(n)
-    elif 'longer_then' in string and 'paragraphs' in string:
+        return longer_than_n_sentences(n)
+    elif 'longer_than' in string and 'paragraphs' in string:
         n = int(string[25:])
-        return longer_then_n_paragraphs(n)
+        return longer_than_n_paragraphs(n)
     elif 'truncate_to_n_sentences' in string:
         n = int(string[24:])
         return truncate_to_n_sentences(n)
