@@ -188,6 +188,34 @@ class remove_middle_m_sentences_out_of_n_text_target(object):
         return series
 
 
+class remove_middle_m_sentences_out_of_n_text_target_with_clue(object):
+    def __init__(self, m, n):
+        self.m = m
+        self.n = n
+
+    def __call__(self, series, *args, **kwargs):
+        m = self.m
+        n = self.n
+        lines = get_n_sentences(series['original_text'], n)
+
+        removed_sequence_start_pos = (n - m) // 2
+        removed_sequence_end_pos = n - ((n - m) // 2)  # this index is already after the removed sequence
+
+        if series['should_manipulate']:
+            lines[removed_sequence_end_pos] = 'skip <mask> ' + lines[removed_sequence_end_pos]
+            series['text'] = ' '.join(lines[: removed_sequence_start_pos] + lines[removed_sequence_end_pos:])
+            lines[removed_sequence_end_pos] = 'skip <skip> ' + lines[removed_sequence_end_pos][7:]
+            series['target'] = ' '.join(lines[: removed_sequence_start_pos] + lines[removed_sequence_end_pos:])
+        else:
+            lines = lines[: -self.m]
+            lines[removed_sequence_start_pos] = 'continue <mask> ' + lines[removed_sequence_start_pos]
+            series['text'] = ' '.join(lines[:removed_sequence_start_pos] + lines[removed_sequence_start_pos:])
+            lines[removed_sequence_start_pos] = 'continue <no_skip> ' + lines[removed_sequence_start_pos][7:]
+            series['target'] = ' '.join(lines[:removed_sequence_start_pos] + lines[removed_sequence_start_pos:])
+
+        return series
+
+
 def remove_second_last_sentence(series):
     lines = get_n_sentences(series['original_text'], None)
 
@@ -241,6 +269,8 @@ def get_manipulation_func_from_args(args):
         return remove_random_paragraph
     elif func_name == 'remove_middle_m_sentences_out_of_n_text_target':
         return remove_middle_m_sentences_out_of_n_text_target(func_args[0], func_args[1])
+    elif func_name == 'remove_middle_m_sentences_out_of_n_text_target_with_clue':
+        return remove_middle_m_sentences_out_of_n_text_target_with_clue(func_args[0], func_args[1])
     elif func_name == 'remove_middle_m_sentences_out_of_n':
         return remove_middle_m_sentences_out_of_n(func_args[0], func_args[1])
     elif func_name == 'remove_second_last_sentence_out_of_n_text_target':
