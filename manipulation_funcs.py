@@ -204,13 +204,13 @@ class remove_middle_m_sentences_out_of_n_text_target_with_clue(object):
         if series['should_manipulate']:
             lines[removed_sequence_end_pos] = 'skip <mask> ' + lines[removed_sequence_end_pos]
             series['text'] = ' '.join(lines[: removed_sequence_start_pos] + lines[removed_sequence_end_pos:])
-            lines[removed_sequence_end_pos] = 'skip <skip> ' + lines[removed_sequence_end_pos][7:]
+            lines[removed_sequence_end_pos] = 'skip <skip> ' + lines[removed_sequence_end_pos][12:]
             series['target'] = ' '.join(lines[: removed_sequence_start_pos] + lines[removed_sequence_end_pos:])
         else:
             lines = lines[: -self.m]
             lines[removed_sequence_start_pos] = 'continue <mask> ' + lines[removed_sequence_start_pos]
             series['text'] = ' '.join(lines[:removed_sequence_start_pos] + lines[removed_sequence_start_pos:])
-            lines[removed_sequence_start_pos] = 'continue <no_skip> ' + lines[removed_sequence_start_pos][7:]
+            lines[removed_sequence_start_pos] = 'continue <no_skip> ' + lines[removed_sequence_start_pos][16:]
             series['target'] = ' '.join(lines[:removed_sequence_start_pos] + lines[removed_sequence_start_pos:])
 
         return series
