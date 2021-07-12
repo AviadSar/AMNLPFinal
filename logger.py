@@ -59,6 +59,7 @@ def draw_train_graphs(train_loss, train_steps, eval_loss, eval_steps, eval_accur
     plt.xlabel("Steps")
     plt.ylabel("Loss")
     plt.title('Train and evaluation loss over training\n' + experiment_name)
+    plt.tight_layout()
     plt.savefig(logs_dir + os.path.sep + 'loss.jpg')
     plt.close()
 
@@ -68,6 +69,7 @@ def draw_train_graphs(train_loss, train_steps, eval_loss, eval_steps, eval_accur
     plt.title('Evaluation accuracy over training\n' + experiment_name)
     plt.xlabel("Steps")
     plt.ylabel("Accuracy")
+    plt.tight_layout()
     plt.savefig(logs_dir + os.path.sep + 'accuracy.jpg')
     plt.close()
 
