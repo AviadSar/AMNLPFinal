@@ -89,27 +89,6 @@ def read_data_from_csv(data_dir):
     return train, dev, test
 
 
-def data_histograms(data):
-    for split in data:
-
-        max_len_lines = 0
-        for index, row in split.iterrows():
-            len_lines = len(row['text'].split('\n\n'))
-            if len_lines > max_len_lines:
-                max_len_lines = len_lines
-
-        histogram = [0] * (max_len_lines + 1)
-        for index, row in split.iterrows():
-            len_lines = len(row['text'].split('\n\n'))
-            histogram[len_lines] += 1
-
-        print(max(histogram))
-        print(histogram)
-
-        plt.hist(np.array(histogram), bins=max_len_lines)
-        plt.show()
-
-
 def load_data(args):
     wiki = load_dataset('wikipedia', "20200501.en", cache_dir=args.wiki_dir)
     n_data_samples = args.n_data_samples

@@ -1,0 +1,14 @@
+{
+  "n_data_samples": null,
+  "n_train_samples": 1000000,
+  "n_test_samples": 10000,
+  "wiki_dir": "/home/aviad/Documents/AMNLPFinal/datasets",
+  "filtered_data_dir": "/home/aviad/Documents/AMNLPFinal/datasets/wiki_gt_10_sentences_1m",
+  "final_data_dir": "/home/aviad/Documents/AMNLPFinal/datasets/missing_all_middle_sentences_out_of_11_or_gt/text_target",
+  "manipulation_func": "remove_all_middle_sentences_text_target",
+  "manipulation_func_args": [5, 11],
+  "clean_and_filter_funcs":
+     ["omit_references",
+      "longest_sequence",
+      "longer_than_n_sentences_10"]
+}

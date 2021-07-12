@@ -160,6 +160,24 @@ class remove_middle_m_sentences_out_of_n(object):
         return series
 
 
+def remove_all_middle_sentences_text_target(series):
+    lines = get_n_sentences(series['original_text'], None)
+
+    if series['should_manipulate']:
+        lines[-3] = '<mask> ' + lines[-3]
+        series['text'] = ' '.join(lines[: 3] + lines[-3:])
+        lines[-3] = '<skip> ' + lines[-3][7:]
+        series['target'] = ' '.join(lines[: 3] + lines[-3:])
+    else:
+        lines = lines[: 6]
+        lines[-3] = '<mask> ' + lines[-3]
+        series['text'] = ' '.join(lines[:3] + lines[-3:])
+        lines[-3] = '<no_skip> ' + lines[-3][7:]
+        series['target'] = ' '.join(lines[:3] + lines[-3:])
+
+    return series
+
+
 class remove_middle_m_sentences_out_of_n_text_target(object):
     def __init__(self, m, n):
         self.m = m
