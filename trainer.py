@@ -11,7 +11,7 @@ from tokenizers import AddedToken
 import data_loader
 import dataset_classes
 from datasets import load_metric
-from logger import Logger, log_from_trainer_state
+from logger import Logger, log_from_log_history
 
 accuracy_metric = load_metric("accuracy")
 
@@ -253,4 +253,4 @@ if __name__ == "__main__":
 
     trainer.save_model(args.model_dir)
     trainer.save_state()
-    log_from_trainer_state(trainer.state, args.model_dir)
+    log_from_log_history(trainer.state.log_history, args.model_dir)

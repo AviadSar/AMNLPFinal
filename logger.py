@@ -85,7 +85,7 @@ def get_experiment_name_from_dir(model_dir):
     return experiment_name
 
 
-def log_from_trainer_state(trainer_state, model_dir):
+def log_from_log_history(log_history, model_dir):
     logs_dir = model_dir + os.path.sep + 'logs'
     if not os.path.isdir(logs_dir):
         os.makedirs(logs_dir)
@@ -98,7 +98,6 @@ def log_from_trainer_state(trainer_state, model_dir):
     eval_accuracy = []
     eval_steps = []
 
-    log_history = trainer_state['log_history']
     for index, log in enumerate(log_history):
         if 'loss' in log:
             train_loss.append(log['loss'])
@@ -115,7 +114,7 @@ def log_from_trainer_state(trainer_state, model_dir):
 def log_from_trainer_state_file(trainer_state_file, model_dir):
     with open(trainer_state_file, 'r') as trainer_state_file:
         trainer_state = json.load(trainer_state_file)
-    log_from_trainer_state(trainer_state, model_dir)
+    log_from_log_history(trainer_state['log_history'], model_dir)
 
 
 if __name__ == '__main__':
