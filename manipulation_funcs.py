@@ -285,6 +285,8 @@ def get_manipulation_func_from_args(args):
         return remove_second_last_paragraph
     elif func_name == 'remove_random_paragraph':
         return remove_random_paragraph
+    elif func_name == 'remove_all_middle_sentences_text_target':
+        return remove_all_middle_sentences_text_target
     elif func_name == 'remove_middle_m_sentences_out_of_n_text_target':
         return remove_middle_m_sentences_out_of_n_text_target(func_args[0], func_args[1])
     elif func_name == 'remove_middle_m_sentences_out_of_n_text_target_with_clue':
