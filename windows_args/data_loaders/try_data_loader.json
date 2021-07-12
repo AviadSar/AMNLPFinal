@@ -1,11 +1,14 @@
 {
   "n_data_samples": null,
-  "n_train_samples": 1000000,
+  "n_train_samples": 10000,
   "n_test_samples": 10000,
   "wiki_dir": "C:\\my_documents\\datasets",
-  "filtered_data_dir": "C:\\my_documents\\AMNLPFinal\\datasets\\wiki_gt_10_sentences_1m",
-  "final_data_dir": "C:\\my_documents\\AMNLPFinal\\datasets\\missing_middle_5_sentences_out_of_11\\text_target",
+  "filtered_data_dir": "C:\\my_documents\\AMNLPFinal\\datasets\\try_data_set",
+  "final_data_dir": "C:\\my_documents\\AMNLPFinal\\datasets\\try_data_set_final",
   "manipulation_func": "remove_middle_m_sentences_out_of_n_text_target",
   "manipulation_func_args": [5, 11],
-  "clean_and_filter_funcs": null
+  "clean_and_filter_funcs":
+      ["omit_references",
+      "longest_sequence",
+      "truncate_to_n_sentences_11"]
 }
