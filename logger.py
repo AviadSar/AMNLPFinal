@@ -77,9 +77,11 @@ def draw_train_graphs(train_loss, train_steps, eval_loss, eval_steps, eval_accur
 def get_experiment_name_from_dir(model_dir):
     experiment_name = os.path.normpath(model_dir)
     experiment_name = experiment_name.split(os.sep)
-    if len(experiment_name) > 2:
-        experiment_name[2] = experiment_name[2] + '\n'
-    experiment_name = '-'.join(experiment_name.split(os.sep))
+    if len(experiment_name) > 5:
+        experiment_name = experiment_name[6:]
+    if len(experiment_name) > 1:
+        experiment_name[1] = experiment_name[1] + '\n'
+    experiment_name = ' '.join(experiment_name)
     return experiment_name
 
 
@@ -96,7 +98,7 @@ def log_from_trainer_state(trainer_state, model_dir):
     eval_accuracy = []
     eval_steps = []
 
-    log_history = trainer_state.log_history
+    log_history = trainer_state['log_history']
     for index, log in enumerate(log_history):
         if 'loss' in log:
             train_loss.append(log['loss'])
@@ -114,3 +116,9 @@ def log_from_trainer_state_file(trainer_state_file, model_dir):
     with open(trainer_state_file, 'r') as trainer_state_file:
         trainer_state = json.load(trainer_state_file)
     log_from_trainer_state(trainer_state, model_dir)
+
+
+if __name__ == '__main__':
+    pass
+    # log_from_trainer_state_file("/home/aviad/Documents/AMNLPFinal/models/roberta-base/missing_middle_5_sentences_out_of_11/text_target/10k/0125/trainer_state.json",
+    #                             "/home/aviad/Documents/AMNLPFinal/models/roberta-base/missing_middle_5_sentences_out_of_11/text_target/10k/0125")
