@@ -2,7 +2,7 @@ import os
 import json
 
 operating_systems = ['windows', 'linux']
-batch_sizes = [4, 16]
+batch_sizes = [2, 8]
 
 sizes = ['10k', '100k', '1m']
 data_split_ratios = [[0.01, 1, 0], [0.1, 1, 0], [1, 1, 0]]
@@ -11,10 +11,10 @@ num_evals = [50, 100, 100]
 task_names = ['missing_middle_5_sentences_out_of_11']
 model_types = ['token_classification']
 
-model_names = ['roberta-base']
+model_names = ['roberta-large']
 targets = ['text_target']
 
-dropouts = [0.1, 0.11, 0.125, 0.15]
+dropouts = [0.1, 0.11, 0.125, 0.15, 0.2]
 
 for os_idx, operating_system in enumerate(operating_systems):
     for model_name in model_names:
@@ -50,6 +50,10 @@ for os_idx, operating_system in enumerate(operating_systems):
 
                         if not os.path.isdir(args_file_dir):
                             os.makedirs(args_file_dir)
-                            print("creating dataset directory " + args_file_dir)
+                            print("creating args file directory " + args_file_dir)
                         with open(args_file_dir + args_file, 'w') as json_file:
                             json.dump(data_dict, json_file, indent=4)
+
+                        if not os.path.isdir(model_dir):
+                            os.makedirs(model_dir)
+                            print("creating model and log directory " + model_dir)

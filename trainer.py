@@ -6,7 +6,7 @@ import pandas as pd
 import argparse
 from args_classes import TrainerArgs
 from transformers import RobertaTokenizerFast, RobertaForSequenceClassification, RobertaForTokenClassification,\
-    Trainer, TrainingArguments, TrainerCallback, RobertaConfig
+    Trainer, TrainingArguments, TrainerCallback
 from tokenizers import AddedToken
 import data_loader
 import dataset_classes
