@@ -118,6 +118,6 @@ def log_from_trainer_state_file(trainer_state_file, model_dir):
 
 
 if __name__ == '__main__':
-    # pass
-    log_from_trainer_state_file("C:\\my_documents\\AMNLPFinal\\models\\roberta-base\\missing_middle_5_sentences_out_of_11\\text_taget_with_clue\\1m\\01\\trainer_state.json",
-                                "C:\\my_documents\\AMNLPFinal\\models\\roberta-base\\missing_middle_5_sentences_out_of_11\\text_taget_with_clue\\1m\\01")
+    pass
+    # log_from_trainer_state_file("/home/aviad/Documents/AMNLPFinal/models/roberta-base/missing_middle_5_sentences_out_of_11/text_target/10k/0125/trainer_state.json",
+    #                             "/home/aviad/Documents/AMNLPFinal/models/roberta-base/missing_middle_5_sentences_out_of_11/text_target/10k/0125")
