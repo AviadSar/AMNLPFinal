@@ -11,7 +11,7 @@ num_evals = [50, 100, 100]
 task_names = ['missing_middle_5_sentences_out_of_11']
 model_types = ['sequence_classification']
 
-model_names = ['roberta-base', 'gpt2', 'facebook/bart-base']
+model_names = ['gpt2-xl', 'facebook/bart-base']
 targets = ['classification_target']
 
 dropouts = [0.1]
