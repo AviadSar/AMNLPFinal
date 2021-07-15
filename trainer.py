@@ -100,14 +100,15 @@ def get_model_and_tokenizer_from_args(args):
         tokenizer = GPT2TokenizerFast.from_pretrained(args.model_name)
         if args.model_type == 'sequence_classification':
             model = GPT2ForSequenceClassification.from_pretrained(args.model_name,
-                                                                  hidden_dropout_prob=args.dropout,
-                                                                  attention_probs_dropout_prob=args.dropout)
+                                                                  resid_pdrop=args.dropout,
+                                                                  embd_pdrop=args.dropout,
+                                                                  attn_pdrop=args.dropout)
     elif 'bart' in args.model_name:
         tokenizer = BartTokenizerFast.from_pretrained(args.model_name)
         if args.model_type == 'sequence_classification':
             model = BartForSequenceClassification.from_pretrained(args.model_name,
-                                                                  hidden_dropout_prob=args.dropout,
-                                                                  attention_probs_dropout_prob=args.dropout)
+                                                                  attention_dropout=args.dropout,
+                                                                  activation_dropout=args.dropout)
     if model and tokenizer:
         return model, tokenizer
     raise Exception('no such model: name "{}", type "{}"'.format(args.model_name, args.model_type))
