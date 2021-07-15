@@ -165,7 +165,7 @@ def load_and_tokenize_dataset(args, tokenizer):
 
         tokenized_data.append(
             {
-                'encoded_text': tokenizer(text, return_attention_mask=False,
+                'encoded_text': tokenizer(text, return_attention_mask=True,
                                           truncation=True, padding='max_length'),
                 'encoded_target': encode_targets(target, tokenizer, args)
             }
