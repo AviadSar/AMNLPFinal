@@ -1,0 +1,16 @@
+{
+    "data_dir": "C:\\my_documents\\AMNLPFinal\\datasets\\missing_middle_5_sentences_out_of_11\\classification_target",
+    "model_dir": "C:\\my_documents\\AMNLPFinal\\models\\facebook/bart-base\\missing_middle_5_sentences_out_of_11\\classification_target\\100k\\01",
+    "model_name": "facebook/bart-base",
+    "model_type": "sequence_classification",
+    "batch_size": 4,
+    "data_split_ratio": [
+        0.1,
+        1,
+        0
+    ],
+    "logging_steps": 10,
+    "eval_steps": 78,
+    "num_evals": 100,
+    "dropout": 0.1
+}
