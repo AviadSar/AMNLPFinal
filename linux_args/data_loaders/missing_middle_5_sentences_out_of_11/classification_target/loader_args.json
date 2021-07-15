@@ -1,0 +1,11 @@
+{
+  "n_data_samples": null,
+  "n_train_samples": 1000000,
+  "n_test_samples": 10000,
+  "wiki_dir": "/home/aviad/Documents/AMNLPFinal/datasets",
+  "filtered_data_dir": "/home/aviad/Documents/AMNLPFinal/datasets/wiki_gt_10_sentences_1m",
+  "final_data_dir": "/home/aviad/Documents/AMNLPFinal/datasets/missing_middle_5_sentences_out_of_11/classification_target",
+  "manipulation_func": "remove_middle_m_sentences_out_of_n_classification_target",
+  "manipulation_func_args": [5, 11],
+  "clean_and_filter_funcs": null
+}

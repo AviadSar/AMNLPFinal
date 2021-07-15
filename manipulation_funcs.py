@@ -21,7 +21,7 @@ def get_n_paragraphs(text, n):
     return paragraphs[sequence_start_pos: sequence_start_pos + n]
 
 
-class remove_second_last_paragraph_out_of_n(object):
+class remove_second_last_paragraph_out_of_n_classification_target(object):
     def __init__(self, n):
         self.n = n
 
@@ -59,7 +59,7 @@ class remove_second_last_paragraph_out_of_n_text_target(object):
         return series
 
 
-def remove_second_last_paragraph(series):
+def remove_second_last_paragraph_classification_target(series):
     text = series['original_text']
     paragraphs = text.split('\n')
 
@@ -79,7 +79,7 @@ def remove_second_last_paragraph(series):
     return series
 
 
-def remove_random_paragraph(series):
+def remove_random_paragraph_text_target(series):
     if series['should_manipulate']:
         text = series['original_text']
         paragraphs = text.split('\n')
@@ -98,7 +98,7 @@ def remove_random_paragraph(series):
     return series
 
 
-class remove_second_last_sentence_out_of_n(object):
+class remove_second_last_sentence_out_of_n_classification_target(object):
     def __init__(self, n):
         self.n = n
 
@@ -136,7 +136,7 @@ class remove_second_last_sentence_out_of_n_text_target(object):
         return series
 
 
-class remove_middle_m_sentences_out_of_n(object):
+class remove_middle_m_sentences_out_of_n_classification_target(object):
     def __init__(self, m, n):
         self.m = m
         self.n = n
@@ -234,7 +234,7 @@ class remove_middle_m_sentences_out_of_n_text_target_with_clue(object):
         return series
 
 
-def remove_second_last_sentence(series):
+def remove_second_last_sentence_classification_target(series):
     lines = get_n_sentences(series['original_text'], None)
 
     deleted_sentence_index = -1
@@ -254,7 +254,7 @@ def remove_second_last_sentence(series):
     return series
 
 
-def remove_random_sentence(series):
+def remove_random_sentence_text_target(series):
     if series['should_manipulate']:
         lines = get_n_sentences(series['original_text'], None)
 
@@ -279,26 +279,26 @@ def get_manipulation_func_from_args(args):
 
     if func_name == 'remove_second_last_paragraph_out_of_n_text_target':
         return remove_second_last_paragraph_out_of_n_text_target(func_args[0])
-    elif func_name == 'remove_second_last_paragraph_out_of_n':
-        return remove_second_last_paragraph_out_of_n(func_args[0])
-    elif func_name == 'remove_second_last_paragraph':
-        return remove_second_last_paragraph
-    elif func_name == 'remove_random_paragraph':
-        return remove_random_paragraph
+    elif func_name == 'remove_second_last_paragraph_out_of_n_classification_target':
+        return remove_second_last_paragraph_out_of_n_classification_target(func_args[0])
+    elif func_name == 'remove_second_last_paragraph_classification_target':
+        return remove_second_last_paragraph_classification_target
+    elif func_name == 'remove_random_paragraph_text_target':
+        return remove_random_paragraph_text_target
     elif func_name == 'remove_all_middle_sentences_text_target':
         return remove_all_middle_sentences_text_target
     elif func_name == 'remove_middle_m_sentences_out_of_n_text_target':
         return remove_middle_m_sentences_out_of_n_text_target(func_args[0], func_args[1])
     elif func_name == 'remove_middle_m_sentences_out_of_n_text_target_with_clue':
         return remove_middle_m_sentences_out_of_n_text_target_with_clue(func_args[0], func_args[1])
-    elif func_name == 'remove_middle_m_sentences_out_of_n':
-        return remove_middle_m_sentences_out_of_n(func_args[0], func_args[1])
+    elif func_name == 'remove_middle_m_sentences_out_of_n_classification_target':
+        return remove_middle_m_sentences_out_of_n_classification_target(func_args[0], func_args[1])
     elif func_name == 'remove_second_last_sentence_out_of_n_text_target':
         return remove_second_last_sentence_out_of_n_text_target(func_args[0])
-    elif func_name == 'remove_second_last_sentence_out_of_n':
-        return remove_second_last_sentence_out_of_n(func_args[0])
-    elif func_name == 'remove_second_last_sentence':
-        return remove_second_last_sentence
-    elif func_name == 'remove_random_sentence':
-        return remove_random_sentence
+    elif func_name == 'remove_second_last_sentence_out_of_n_classification_target':
+        return remove_second_last_sentence_out_of_n_classification_target(func_args[0])
+    elif func_name == 'remove_second_last_sentence_classification_target':
+        return remove_second_last_sentence_classification_target
+    elif func_name == 'remove_random_sentence_text_target':
+        return remove_random_sentence_text_target
     return None

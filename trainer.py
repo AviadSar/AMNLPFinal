@@ -6,7 +6,8 @@ import pandas as pd
 import argparse
 from args_classes import TrainerArgs
 from transformers import RobertaTokenizerFast, RobertaForSequenceClassification, RobertaForTokenClassification,\
-    Trainer, TrainingArguments, TrainerCallback
+    Trainer, TrainingArguments, TrainerCallback, GPT2ForSequenceClassification, GPT2TokenizerFast,\
+    BartForSequenceClassification, BartTokenizerFast
 from tokenizers import AddedToken
 import data_loader
 import dataset_classes
@@ -81,16 +82,34 @@ def parse_args():
     return args
 
 
-def get_model_from_args(args):
+def get_model_and_tokenizer_from_args(args):
+    model, tokenizer = None, None
     if 'roberta' in args.model_name:
+        tokenizer = RobertaTokenizerFast.from_pretrained(args.model_name)
         if args.model_type == 'sequence_classification':
-            return RobertaForSequenceClassification.from_pretrained(args.model_name,
-                                                                    hidden_dropout_prob=args.dropout,
-                                                                    attention_probs_dropout_prob=args.dropout)
+            model = RobertaForSequenceClassification.from_pretrained(args.model_name,
+                                                                     hidden_dropout_prob=args.dropout,
+                                                                     attention_probs_dropout_prob=args.dropout)
         elif args.model_type == 'token_classification':
-            return RobertaForTokenClassification.from_pretrained(args.model_name,
-                                                                 hidden_dropout_prob=args.dropout,
-                                                                 attention_probs_dropout_prob=args.dropout)
+            tokenizer.add_special_tokens({"additional_special_tokens": [AddedToken('<skip>', lstrip=True),
+                                                                        AddedToken('<no_skip>', lstrip=True)]})
+            model = RobertaForTokenClassification.from_pretrained(args.model_name,
+                                                                  hidden_dropout_prob=args.dropout,
+                                                                  attention_probs_dropout_prob=args.dropout)
+    elif 'gpt2' in args.model_name:
+        tokenizer = GPT2TokenizerFast.from_pretrained(args.model_name)
+        if args.model_type == 'sequence_classification':
+            model = GPT2ForSequenceClassification.from_pretrained(args.model_name,
+                                                                  hidden_dropout_prob=args.dropout,
+                                                                  attention_probs_dropout_prob=args.dropout)
+    elif 'bart' in args.model_name:
+        tokenizer = BartTokenizerFast.from_pretrained(args.model_name)
+        if args.model_type == 'sequence_classification':
+            model = BartForSequenceClassification.from_pretrained(args.model_name,
+                                                                  hidden_dropout_prob=args.dropout,
+                                                                  attention_probs_dropout_prob=args.dropout)
+    if model and tokenizer:
+        return model, tokenizer
     raise Exception('no such model: name "{}", type "{}"'.format(args.model_name, args.model_type))
 
 
@@ -158,9 +177,7 @@ def load_and_tokenize_dataset(args, tokenizer):
 
 
 def set_trainer(args):
-    tokenizer = RobertaTokenizerFast.from_pretrained(args.model_name)
-    tokenizer.add_special_tokens({"additional_special_tokens": [AddedToken('<skip>', lstrip=True), AddedToken('<no_skip>', lstrip=True)]})
-    model = get_model_from_args(args)
+    model, tokenizer = get_model_and_tokenizer_from_args(args)
     model.resize_token_embeddings(len(tokenizer))
 
     dataset = load_and_tokenize_dataset(args, tokenizer)
