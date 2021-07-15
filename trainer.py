@@ -98,6 +98,7 @@ def get_model_and_tokenizer_from_args(args):
                                                                   attention_probs_dropout_prob=args.dropout)
     elif 'gpt2' in args.model_name:
         tokenizer = GPT2TokenizerFast.from_pretrained(args.model_name)
+        tokenizer.add_special_tokens({'pad_token': '<pad>'})
         if args.model_type == 'sequence_classification':
             model = GPT2ForSequenceClassification.from_pretrained(args.model_name,
                                                                   resid_pdrop=args.dropout,
