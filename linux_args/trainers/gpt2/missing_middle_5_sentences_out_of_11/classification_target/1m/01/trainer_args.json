@@ -3,7 +3,7 @@
     "model_dir": "/home/aviad/Documents/AMNLPFinal/models/gpt2/missing_middle_5_sentences_out_of_11/classification_target/1m/01",
     "model_name": "gpt2",
     "model_type": "sequence_classification",
-    "batch_size": 16,
+    "batch_size": 8,
     "data_split_ratio": [
         1,
         1,

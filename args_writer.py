@@ -2,7 +2,7 @@ import os
 import json
 
 operating_systems = ['windows', 'linux']
-batch_sizes = [4, 16]
+batch_sizes = [2, 8]
 
 sizes = ['10k', '100k', '1m']
 data_split_ratios = [[0.01, 1, 0], [0.1, 1, 0], [1, 1, 0]]
@@ -11,7 +11,7 @@ num_evals = [50, 100, 100]
 task_names = ['missing_middle_5_sentences_out_of_11']
 model_types = ['sequence_classification']
 
-model_names = ['gpt2-xl', 'facebook/bart-base']
+model_names = ['facebook/bart-base', 'gpt2']
 targets = ['classification_target']
 
 dropouts = [0.1]
