@@ -104,7 +104,7 @@ def get_model_and_tokenizer_from_args(args):
                                                                   resid_pdrop=args.dropout,
                                                                   embd_pdrop=args.dropout,
                                                                   attn_pdrop=args.dropout,
-                                                                  pad_token_id=0)
+                                                                  pad_token_id=tokenizer.pad_token_id)
     elif 'bart' in args.model_name:
         tokenizer = BartTokenizerFast.from_pretrained(args.model_name)
         if args.model_type == 'sequence_classification':

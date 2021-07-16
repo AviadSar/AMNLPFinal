@@ -2,7 +2,7 @@ import os
 import json
 
 operating_systems = ['windows', 'linux']
-batch_sizes = [2, 8]
+batch_sizes = [4, 16]
 
 sizes = ['10k', '100k', '1m']
 data_split_ratios = [[0.01, 1, 0], [0.1, 1, 0], [1, 1, 0]]
