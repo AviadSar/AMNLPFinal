@@ -153,7 +153,7 @@ class remove_middle_m_sentences_out_of_n_classification_target(object):
             series['text'] = ' '.join(lines[: removed_sequence_start_pos] + lines[removed_sequence_end_pos:])
             series['target'] = 1
         else:
-            lines = lines[: -1]
+            lines = lines[: -self.m]
             series['text'] = ' '.join(lines)
             series['target'] = 0
 

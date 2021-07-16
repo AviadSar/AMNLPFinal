@@ -1,7 +1,6 @@
-import pandas as pd
+import data_loader
 
-data = pd.DataFrame(columns=['title', 'text'])
-data2 = pd.DataFrame({'title': [1, 2, 3], 'text': [2, 4, 6]})
-data3 = pd.DataFrame({'title': [4, 5, 6], 'text': [8, 10, 12]})
-data4 = data.append(data2, ignore_index=True).append(data3, ignore_index=True)
-print(data4)
+data = data_loader.read_data_from_csv("/home/aviad/Documents/AMNLPFinal/datasets/missing_middle_5_sentences_out_of_11/classification_target")
+data = data[0][:][:10]
+print(data)
+a = 1
