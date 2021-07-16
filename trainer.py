@@ -103,7 +103,8 @@ def get_model_and_tokenizer_from_args(args):
             model = GPT2ForSequenceClassification.from_pretrained(args.model_name,
                                                                   resid_pdrop=args.dropout,
                                                                   embd_pdrop=args.dropout,
-                                                                  attn_pdrop=args.dropout)
+                                                                  attn_pdrop=args.dropout,
+                                                                  pad_token_id=0)
     elif 'bart' in args.model_name:
         tokenizer = BartTokenizerFast.from_pretrained(args.model_name)
         if args.model_type == 'sequence_classification':
@@ -165,7 +166,7 @@ def load_and_tokenize_dataset(args, tokenizer):
 
         tokenized_data.append(
             {
-                'encoded_text': tokenizer(text, return_attention_mask=True,
+                'encoded_text': tokenizer(text, max_length=512, return_attention_mask=True,
                                           truncation=True, padding='max_length'),
                 'encoded_target': encode_targets(target, tokenizer, args)
             }
