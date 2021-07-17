@@ -132,8 +132,16 @@ def compute_sequence_accuracy(eval_pred):
     return accuracy_metric.compute(predictions=predictions, references=labels)
 
 
+def compute_bart_sequence_accuracy(eval_pred):
+    logits, labels = eval_pred
+    predictions = np.argmax(logits[0], axis=-1)
+    return accuracy_metric.compute(predictions=predictions, references=labels)
+
+
 def compute_metrics(args):
-    if args.model_type == 'token_classification':
+    if 'bart' in args.model_name:
+        return compute_bart_sequence_accuracy
+    elif args.model_type == 'token_classification':
         return compute_token_accuracy
     elif args.model_type == 'sequence_classification':
         return compute_sequence_accuracy
