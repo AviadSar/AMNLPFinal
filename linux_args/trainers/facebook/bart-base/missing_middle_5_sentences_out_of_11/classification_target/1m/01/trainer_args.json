@@ -6,7 +6,7 @@
     "batch_size": 16,
     "data_split_ratio": [
         1,
-        0.5,
+        1,
         0
     ],
     "logging_steps": 10,
