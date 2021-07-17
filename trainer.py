@@ -89,13 +89,15 @@ def get_model_and_tokenizer_from_args(args):
         if args.model_type == 'sequence_classification':
             model = RobertaForSequenceClassification.from_pretrained(args.model_name,
                                                                      hidden_dropout_prob=args.dropout,
-                                                                     attention_probs_dropout_prob=args.dropout)
+                                                                     attention_probs_dropout_prob=args.dropout,
+                                                                     num_labels=2)
         elif args.model_type == 'token_classification':
             tokenizer.add_special_tokens({"additional_special_tokens": [AddedToken('<skip>', lstrip=True),
                                                                         AddedToken('<no_skip>', lstrip=True)]})
             model = RobertaForTokenClassification.from_pretrained(args.model_name,
                                                                   hidden_dropout_prob=args.dropout,
-                                                                  attention_probs_dropout_prob=args.dropout)
+                                                                  attention_probs_dropout_prob=args.dropout,
+                                                                  num_labels=2)
     elif 'gpt2' in args.model_name:
         tokenizer = GPT2TokenizerFast.from_pretrained(args.model_name)
         tokenizer.add_special_tokens({'pad_token': '<pad>'})
@@ -104,13 +106,15 @@ def get_model_and_tokenizer_from_args(args):
                                                                   resid_pdrop=args.dropout,
                                                                   embd_pdrop=args.dropout,
                                                                   attn_pdrop=args.dropout,
-                                                                  pad_token_id=tokenizer.pad_token_id)
+                                                                  pad_token_id=tokenizer.pad_token_id,
+                                                                  num_labels=2)
     elif 'bart' in args.model_name:
         tokenizer = BartTokenizerFast.from_pretrained(args.model_name)
         if args.model_type == 'sequence_classification':
             model = BartForSequenceClassification.from_pretrained(args.model_name,
                                                                   attention_dropout=args.dropout,
-                                                                  activation_dropout=args.dropout)
+                                                                  activation_dropout=args.dropout,
+                                                                  num_labels=2)
     if model and tokenizer:
         return model, tokenizer
     raise Exception('no such model: name "{}", type "{}"'.format(args.model_name, args.model_type))
