@@ -30,3 +30,7 @@ class TrainerArgs(object):
             self.eval_steps = json_data["eval_steps"]
             self.num_evals = json_data["num_evals"]
             self.dropout = json_data["dropout"]
+            if "eval" in json_data:
+                self.eval = json_data["eval"]
+            else:
+                self.eval = False
