@@ -138,9 +138,9 @@ class eval_token_prediction(object):
         logits, labels = eval_pred
         predictions = np.argmax(logits, axis=-1)
 
-        eval_data = pd.read_csv(args.data_dir + os.path.sep + 'evaluated.tsv', sep='\t')
-        eval_data[self.args.model_name + '_' + self.args.model_type] = predictions
-        eval_data.to_csv(args.data_dir + os.path.sep + 'evaluated.tsv', sep='\t')
+        eval_data = pd.read_csv(self.args.data_dir + os.path.sep + 'evaluated.tsv', sep='\t')
+        eval_data[self.args.model_name + '_' + self.args.model_type] = pd.Series(predictions)
+        eval_data.to_csv(self.args.data_dir + os.path.sep + 'evaluated.tsv', sep='\t')
 
         return accuracy_metric.compute(predictions=predictions[labels != -100], references=labels[labels != -100])
 
@@ -153,9 +153,9 @@ class eval_sequence_prediction(object):
         logits, labels = eval_pred
         predictions = np.argmax(logits, axis=-1)
 
-        eval_data = pd.read_csv(args.data_dir + os.path.sep + 'evaluated.tsv', sep='\t')
-        eval_data[self.args.model_name + '_' + self.args.model_type] = predictions
-        eval_data.to_csv(args.data_dir + os.path.sep + 'evaluated.tsv', sep='\t')
+        eval_data = pd.read_csv(self.args.data_dir + os.path.sep + 'evaluated.tsv', sep='\t')
+        eval_data[self.args.model_name + '_' + self.args.model_type] = pd.Series(predictions)
+        eval_data.to_csv(self.args.data_dir + os.path.sep + 'evaluated.tsv', sep='\t')
 
         return accuracy_metric.compute(predictions=predictions, references=labels)
 
@@ -168,9 +168,9 @@ class eval_bart_sequence_prediction(object):
         logits, labels = eval_pred
         predictions = np.argmax(logits[0], axis=-1)
 
-        eval_data = pd.read_csv(args.data_dir + os.path.sep + 'evaluated.tsv', sep='\t')
-        eval_data[self.args.model_name + '_' + self.args.model_type] = predictions
-        eval_data.to_csv(args.data_dir + os.path.sep + 'evaluated.tsv', sep='\t')
+        eval_data = pd.read_csv(self.args.data_dir + os.path.sep + 'evaluated.tsv', sep='\t')
+        eval_data[self.args.model_name + '_' + self.args.model_type] = pd.Series(predictions)
+        eval_data.to_csv(self.args.data_dir + os.path.sep + 'evaluated.tsv', sep='\t')
 
         return accuracy_metric.compute(predictions=predictions, references=labels)
 
@@ -203,11 +203,11 @@ def compute_metrics(args):
             return compute_sequence_accuracy
     else:
         if 'bart' in args.model_name:
-            return eval_bart_sequence_prediction
+            return eval_bart_sequence_prediction(args)
         elif args.model_type == 'token_classification':
-            return eval_token_prediction
+            return eval_token_prediction(args)
         elif args.model_type == 'sequence_classification':
-            return eval_sequence_prediction
+            return eval_sequence_prediction(args)
 
 def encode_targets_for_token_classification(batch_target, tokenizer):
     encoded_targets_list = tokenizer(batch_target, return_attention_mask=False, truncation=True, padding='max_length')['input_ids']
