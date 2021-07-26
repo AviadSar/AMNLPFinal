@@ -30,10 +30,22 @@ if __name__ == '__main__':
     #     os.system("python3 data_loader.py --json_file " + args.data_loader_args)
     # if args.trainer_args:
     #     os.system("python3 trainer.py --json_file " + args.trainer_args)
+
+
     os.system(
-        "python3 trainer.py --json_file " + "linux_args/trainers/facebook/bart-large/missing_middle_5_sentences_out_of_11/classification_target/1m/01/trainer_args.json")
+        "python3 data_loader.py --json_file " + "linux_args/data_loaders/missing_middle_1_sentences_out_of_7/text_target/loader_args.json")
+    os.system(
+        "python3 data_loader.py --json_file " + "linux_args/data_loaders/missing_middle_2_sentences_out_of_8/text_target/loader_args.json")
+    os.system(
+        "python3 data_loader.py --json_file " + "linux_args/data_loaders/missing_middle_3_sentences_out_of_9/text_target/loader_args.json")
+    os.system(
+        "python3 data_loader.py --json_file " + "linux_args/data_loaders/missing_middle_4_sentences_out_of_10/text_target/loader_args.json")
+
+
     # os.system(
-    #     "python3 trainer.py --json_file " + "linux_args/trainers/gpt2-medium/missing_middle_5_sentences_out_of_11/classification_target/1m/01/trainer_args.json")
+    #     "python3 trainer.py --json_file " + "linux_args/trainers/roberta-base/missing_middle_5_sentences_out_of_11/classification_target/10k/01/trainer_args.json")
+    # os.system(
+    #     "python3 trainer.py --json_file " + "linux_args/evaluators/facebook/bart-base/missing_middle_5_sentences_out_of_11/classification_target/1m/01/trainer_args.json")
     # os.system(
     #     "python3 trainer.py --json_file " + "linux_args/trainers/gpt2-xl/missing_middle_5_sentences_out_of_11/classification_target/10k/01/trainer_args.json")
 
