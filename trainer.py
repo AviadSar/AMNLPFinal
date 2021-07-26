@@ -14,6 +14,7 @@ import dataset_classes
 from datasets import load_metric
 from logger import Logger, log_from_log_history
 
+
 accuracy_metric = load_metric("accuracy")
 
 
@@ -219,6 +220,9 @@ def set_trainer(args):
         per_device_eval_batch_size=args.batch_size * 4,
         gradient_accumulation_steps=128 // args.batch_size,
         eval_accumulation_steps=args.batch_size * 3,
+        fp16=True,
+        fp16_full_eval=True,
+        fp16_backend='apex',
         warmup_steps=500,
         weight_decay=0.01,
         save_strategy='no',
