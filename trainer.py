@@ -76,6 +76,13 @@ def parse_args():
         default=4,
     )
 
+    parser.add_argument(
+        '--eval',
+        help='whether or not to only evaluate',
+        type=bool,
+        default=False,
+    )
+
     args = parser.parse_args()
     if args.json_file:
         args = TrainerArgs(args.json_file)
@@ -115,9 +122,56 @@ def get_model_and_tokenizer_from_args(args):
                                                                   attention_dropout=args.dropout,
                                                                   activation_dropout=args.dropout,
                                                                   num_labels=2)
+    if args.eval:
+        model = model.from_pretrained(args.model_dir)
     if model and tokenizer:
         return model, tokenizer
     raise Exception('no such model: name "{}", type "{}"'.format(args.model_name, args.model_type))
+
+
+class eval_token_prediction(object):
+    def __init__(self, args):
+        self.args = args
+
+    def __call__(self, eval_pred, *args, **kwargs):
+        logits, labels = eval_pred
+        predictions = np.argmax(logits, axis=-1)
+
+        eval_data = pd.read_csv(args.data_dir + os.path.sep + 'evaluated.tsv', sep='\t')
+        eval_data[self.args.model_name + '_' + self.args.model_type] = predictions
+        eval_data.to_csv(args.data_dir + os.path.sep + 'evaluated.tsv', sep='\t')
+
+        return accuracy_metric.compute(predictions=predictions[labels != -100], references=labels[labels != -100])
+
+
+class eval_sequence_prediction(object):
+    def __init__(self, args):
+        self.args = args
+
+    def __call__(self, eval_pred, *args, **kwargs):
+        logits, labels = eval_pred
+        predictions = np.argmax(logits, axis=-1)
+
+        eval_data = pd.read_csv(args.data_dir + os.path.sep + 'evaluated.tsv', sep='\t')
+        eval_data[self.args.model_name + '_' + self.args.model_type] = predictions
+        eval_data.to_csv(args.data_dir + os.path.sep + 'evaluated.tsv', sep='\t')
+
+        return accuracy_metric.compute(predictions=predictions, references=labels)
+
+
+class eval_bart_sequence_prediction(object):
+    def __init__(self, args):
+        self.args = args
+
+    def __call__(self, eval_pred, *args, **kwargs):
+        logits, labels = eval_pred
+        predictions = np.argmax(logits[0], axis=-1)
+
+        eval_data = pd.read_csv(args.data_dir + os.path.sep + 'evaluated.tsv', sep='\t')
+        eval_data[self.args.model_name + '_' + self.args.model_type] = predictions
+        eval_data.to_csv(args.data_dir + os.path.sep + 'evaluated.tsv', sep='\t')
+
+        return accuracy_metric.compute(predictions=predictions, references=labels)
 
 
 def compute_token_accuracy(eval_pred):
@@ -139,13 +193,20 @@ def compute_bart_sequence_accuracy(eval_pred):
 
 
 def compute_metrics(args):
-    if 'bart' in args.model_name:
-        return compute_bart_sequence_accuracy
-    elif args.model_type == 'token_classification':
-        return compute_token_accuracy
-    elif args.model_type == 'sequence_classification':
-        return compute_sequence_accuracy
-
+    if not args.eval:
+        if 'bart' in args.model_name:
+            return compute_bart_sequence_accuracy
+        elif args.model_type == 'token_classification':
+            return compute_token_accuracy
+        elif args.model_type == 'sequence_classification':
+            return compute_sequence_accuracy
+    else:
+        if 'bart' in args.model_name:
+            return eval_bart_sequence_prediction
+        elif args.model_type == 'token_classification':
+            return eval_token_prediction
+        elif args.model_type == 'sequence_classification':
+            return eval_sequence_prediction
 
 def encode_targets_for_token_classification(batch_target, tokenizer):
     encoded_targets_list = tokenizer(batch_target, return_attention_mask=False, truncation=True, padding='max_length')['input_ids']
@@ -165,9 +226,13 @@ def encode_targets(batch_target, tokenizer, args):
 
 
 def load_and_tokenize_dataset(args, tokenizer):
-    data = data_loader.read_data_from_csv(args.data_dir)
-    # the ratio of train/dev/test sets where 1 is the full size of each the set
-    splits_ratio = args.data_split_ratio
+    if args.eval:
+        data = [pd.read_csv(args.data_dir + os.path.sep + 'dev.tsv', sep='\t')]
+        splits_ratio = [1]
+    else:
+        data = data_loader.read_data_from_csv(args.data_dir)
+        # the ratio of train/dev/test sets where 1 is the full size of each the set
+        splits_ratio = args.data_split_ratio
 
     tokenized_data = []
     for split, ratio in zip(data, splits_ratio):
@@ -196,6 +261,12 @@ def set_trainer(args):
     model.resize_token_embeddings(len(tokenizer))
 
     dataset = load_and_tokenize_dataset(args, tokenizer)
+    if len(dataset) > 1:
+        train = dataset[0]
+        dev = dataset[1]
+    else:
+        train = None
+        dev = dataset[0]
 
     class StopEachEpochCallback(TrainerCallback):
         def on_epoch_end(self, args, state, control, logs=None, **kwargs):
@@ -219,6 +290,9 @@ def set_trainer(args):
         per_device_eval_batch_size=args.batch_size * 4,
         gradient_accumulation_steps=128 // args.batch_size,
         eval_accumulation_steps=args.batch_size * 3,
+        fp16=True,
+        fp16_full_eval=True,
+        fp16_backend='apex',
         warmup_steps=500,
         weight_decay=0.01,
         save_strategy='no',
@@ -235,8 +309,8 @@ def set_trainer(args):
     trainer = Trainer(
         model=model,
         args=training_args,
-        train_dataset=dataset[0],
-        eval_dataset=dataset[1],
+        train_dataset=train,
+        eval_dataset=dev,
         callbacks=[EvaluateAndSaveCallback(), LoggingCallback()],
         compute_metrics=compute_metrics(args)
     )
@@ -276,14 +350,17 @@ if __name__ == "__main__":
     args = parse_args()
     trainer = set_trainer(args)
 
-    try:
-        trainer.train(resume_from_checkpoint=True)
-    except ValueError as e:
-        if 'No valid checkpoint' in e.args[0]:
-            trainer.train()
-        else:
-            raise e
+    if args.eval:
+        trainer.evaluate()
+    else:
+        try:
+            trainer.train(resume_from_checkpoint=True)
+        except ValueError as e:
+            if 'No valid checkpoint' in e.args[0]:
+                trainer.train()
+            else:
+                raise e
 
-    trainer.save_model(args.model_dir)
-    trainer.save_state()
-    log_from_log_history(trainer.state.log_history, args.model_dir)
+        trainer.save_model(args.model_dir)
+        trainer.save_state()
+        log_from_log_history(trainer.state.log_history, args.model_dir)

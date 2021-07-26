@@ -35,15 +35,27 @@ def data_tokens_histograms(data):
             batch_idx += 1
 
         greater_than_512 = 0
+        greater_than_400 = 0
+        greater_than_300 = 0
+        greater_than_256 = 0
         max_len_lines = max(histogram.keys()) + 1
         list_histogram = [0] * (max_len_lines + 1)
         for key, value in histogram.items():
             list_histogram[key] = value
             if key > 512:
                 greater_than_512 += value
+            if key > 400:
+                greater_than_400 += value
+            if key > 300:
+                greater_than_300 += value
+            if key > 256:
+                greater_than_256 += value
 
         print('maximal text length (in tokens): ' + str(max(histogram)))
         print('number of entries greater than 512: ' + str(greater_than_512))
+        print('number of entries greater than 400: ' + str(greater_than_400))
+        print('number of entries greater than 300: ' + str(greater_than_300))
+        print('number of entries greater than 256: ' + str(greater_than_256))
         print('histogram values: ' + str(histogram))
 
         plt.hist(np.array(list_histogram), bins=max_len_lines)
